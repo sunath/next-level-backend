@@ -1,29 +1,28 @@
 const {DataClass,DataClassFacotry} = require("../dataclasses/base")
+const {is_required, minLength} = require("../dataclasses/validators")
 
 
 class UserDataClass extends DataClass {
     username = {
         type:String,
-        validations:[(val) => {
-            return new Promise((resolve,reject) => {
-                resolve({error:true,details:'username is required'})
-            })
-        }]
+        validations:[is_required("Username is required"),minLength(8,"Username must contains 10 letters")]
     };
     password = {
         type:String,
         validations:[]
-    };
+    }
+
+    age = {
+        type:Number,
+        validations:[is_required("Age is required sweetheart")]
+    }
 
 
 }
 
 const UserDataClassFactory = DataClassFacotry.createFactory(UserDataClass)
 
-let userData = UserDataClassFactory.createObject({'username':"Sunath",'password':"It's a secret"})
-console.log(userData)
-console.log(userData.validations)
-console.log(userData)
+let userData = UserDataClassFactory.createObject({'username':"Sunath",'password':"It's a secret",age:0})
 
 const returnData = userData.validate()
 returnData.then(e => {
