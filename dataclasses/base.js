@@ -1,5 +1,7 @@
+const { Schema, default: mongoose } = require("mongoose");
 const iterateList = require("../utils/iterateAndPrint")
-const checkTheObjectPromiseOrNot = require("../utils/promiseChecking")
+const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
+const { typeChecking, unqiueValidator } = require("./validators");
 
 /**
  * Base class for every data class
@@ -9,6 +11,7 @@ const checkTheObjectPromiseOrNot = require("../utils/promiseChecking")
  * In case you are an oop fan
  */
 class DataClass{
+
     
     /**
      * A function to validate user data
@@ -23,7 +26,7 @@ class DataClass{
      * @returns 
      */
     static getOwnPropertyNames(thisObj){
-        return Object.keys(thisObj).filter(e => e != "validations")
+        return Object.keys(thisObj).filter(e => (e != "validations" && e != "form_data" && e != "model"))
     }
     
     /**
@@ -39,7 +42,15 @@ class DataClass{
         // Iterate through all the properties 
         iterateList(properties,(property) => {
             // Set the validations of the property into a new dictionary
-            validations[property] = this[property]['validations'] || []
+            // add the type checking validation by the base class
+            validations[property] =  [
+                typeChecking(this[property]['type'],property),
+            ...(this[property]['validations'] ||[])]
+
+            // add the unique validator if the we have the unique in the property attributes
+            if(this[property]['unique']){
+                validations[property].push(unqiueValidator(property,this.model))
+            }
         })
 
         // Define the validations in the object properites 
@@ -55,6 +66,7 @@ class DataClass{
 
 
     async validate(){
+       
         // Get the all fields of the validations in the class
         const validateKeys = DataClass.getOwnPropertyNames(this.validations);
         // gather information about how many validations owns by one by one
@@ -91,7 +103,32 @@ class DataClass{
             }
         }
 
-        
+        return {data:{okay:true}}
+    }
+
+    getName(){
+        throw new NotReturnPromiseError("getName function must be override by the subclass")
+    }
+
+    /**
+     * 
+     * @param {Boolean} timestamps - use to declare weather you need default timestamps or not
+     * @returns 
+     */
+    buildModel(timestamps=true){
+        const properties = DataClass.getOwnPropertyNames(this)
+        const shcemaObject = {}
+        for(let i = 0 ; i < properties.length;i++){
+            const propertyName = properties[i]
+            const attributes = this[propertyName]
+            if(attributes['validations']){
+                delete attributes['validations']
+            }
+            shcemaObject[propertyName] = attributes
+        }
+        const schema = new Schema(shcemaObject,{timestamps:timestamps});
+        const model = mongoose.model(this.getName(),schema) 
+        return model;
     }
 }
 
@@ -112,6 +149,25 @@ class InvalidDataClassError extends Error{}
  */
 class NotReturnPromiseError extends Error{}
 
+
+/**
+ * This error mainly cause when you don't override functions you have to
+ * Especially you should override dataclass function call getName
+ * @example
+ * class DummyData extends DataClass{
+ * 
+ *      name = {
+ *          type:String
+ *      }
+ * 
+ *      getName(){
+ *      return "dummy_data"     
+*        }
+ * }
+ * 
+ */
+class MustBeOverrideByTheSubclass extends Error {}
+
 /**
  * Base Factory for Data class 
  * It can be used to create objects and 
@@ -122,9 +178,17 @@ class DataClassFacotry{
     // Store the subclass of the DataClass
     dataClass;
 
+    // store the model of the subclass
+    model;
+
+
+    static models = {}
+
     // Mainly used to get the subclass
-    constructor(cls){
+    constructor(cls,metaData){
         this.dataClass = cls;
+        this.model = this.getModel()
+        this.metaData = metaData;
     }
    
     /**
@@ -135,6 +199,8 @@ class DataClassFacotry{
     createObject(data){
         // Init a new object
         let object = new this.dataClass()
+         //set the model
+        object.model = DataClassFacotry.models[object.getName()]
         // Check wether object is a data class or not
         if(!(object instanceof DataClass))throw new InvalidDataClassError("Data class is invalid");
         // extract field information
@@ -146,6 +212,15 @@ class DataClassFacotry{
         // return the customize object
         return object
 
+    }
+
+    getModel(){
+        const c  = new this.dataClass()
+        if(!DataClassFacotry.models[c.getName()]){
+            const timestamps = this.metaData ? this.metaData['timestamps'] : true
+            DataClassFacotry.models[c.getName()] = c.buildModel(timestamps)
+        }
+        return DataClassFacotry.models[c.getName()];
     }
 
     // Create new class factory to the given class
