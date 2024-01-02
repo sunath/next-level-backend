@@ -124,4 +124,12 @@ function getAllObjects(router,model,limit=10,skip=0){
     }) 
 }
 
+
+/**
+ * 
+ */
+function addModel(){
+
+}
+
 module.exports = {applyBasicCrud,ERROR_CODES}
