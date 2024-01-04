@@ -2,6 +2,7 @@ const { Model } = require("mongoose");
 const { DataClass, DataClassFacotry } = require("../dataclasses/base");
 const {Router} = require("express");
 const { sendInternalServerError, sendGetItemsResponse } = require("../utils/basic_returns");
+const { ModelWithIdNotFound } = require("../actions");
 
 
 
@@ -70,10 +71,11 @@ function applyBasicCrud(router,cls){
  * // {url}?id=1213290490343
  * @param {Router} router 
  * @param {Model} model 
+ * @param {DataClassFacotry} factory
  */
-function addGetById(router,model){
+function addGetById(router,factory){
      // write the default get function with id
-     router.get("/",function(req,res){
+     router.get("/",async function(req,res){
         //take the id from the query
         const id = req.query['id']
         // check the id exists
@@ -82,15 +84,22 @@ function addGetById(router,model){
             // set the error as id must be defined
             return res.status(400).send({'error':"Id must be defined",errorId:ERROR_CODES.ID_NOT_FOUND})
         }else{
-            // find the model with the id
-            model.findOne({_id:id}).then(e => {
-                if(!e){
-                    return res.status(404).send({error:"invalid id",errorID:ERROR_CODES.ID_IS_INVALID})
+
+            try{
+                // get the object by the factory class 
+                const object = await factory.getModelObjectById(id)
+                return sendGetItemsResponse(res,object)
+            }catch(error){
+                // if the id do not exists
+                if(error instanceof ModelWithIdNotFound){
+                    // send an 404 error
+                    return res.status(404).send({error:"invalid id",errorID:ERROR_CODES.ID_IS_INVALID}) 
+                }else{
+                    // in case of database connection failed
+                    // or any other error ouccured
+                    return res.status(500).send({error:"Internal server error",errorId:ERROR_CODES.INTERNAL_SERVER_ERROR})
                 }
-                return res.status(200).send(e)
-            }).catch(error => {
-                return res.status(500).send({error:"Internal server error",errorId:ERROR_CODES.INTERNAL_SERVER_ERROR})
-            })
+            }
         }
     })
 }
@@ -99,25 +108,33 @@ function addGetById(router,model){
 
 /**
  * Can be used to retrive many objects at one
- * 
+ * most commonly used to retrive data in a table
+ * or maybe in a scroll bar
  * for example think you have a class called Food
  * you can get 10 foods as a array by using this endpoint
  * 
  * @param {Router} router 
- * @param {Model} model 
+ * @param {DataClassFacotry} dataClassFactory 
  * @param {Number} limit 
  * @param {Number} skip 
  */
-function getAllObjects(router,model,limit=10,skip=0){
+function getAllObjects(router,dataClassFactory,limit=10,skip=0){
     router.get("/all",async function(req,res){
 
+        // query the limit
+        // set it to user defined value or default value
         limit = req.query['limit'] || limit
+        // query the skip
+        // set it to user defined value or default value
         skip = req.query['skip'] || skip
 
         try{
-            const models = await model.find({}).limit(limit).skip(skip)
+            // retrive the objects
+            const models = await dataClassFactory.getModelObjectsWithAll(limit,skip)
+            // send items to the user
             return sendGetItemsResponse(res,models)
         }catch(error){
+            // send an internal server error if a error occured
             return sendInternalServerError(res)
         }
         

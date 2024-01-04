@@ -2,6 +2,7 @@ const { Schema, default: mongoose } = require("mongoose");
 const iterateList = require("../utils/iterateAndPrint")
 const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
 const { typeChecking, unqiueValidator } = require("./validators");
+const  {getModelObjectWithId,getAllModelsObjects} = require("../actions")
 
 /**
  * Base class for every data class
@@ -177,8 +178,6 @@ class DataClassFacotry{
 
     // Store the subclass of the DataClass
     dataClass;
-
-    // store the model of the subclass
     model;
 
 
@@ -226,6 +225,34 @@ class DataClassFacotry{
     // Create new class factory to the given class
     static createFactory(cls){
         return new DataClassFacotry(cls);
+    }
+
+    /**
+     * get an object of a given id
+     * if the id is not found throw an error
+     * In case of an internal server error occurred a expection will be thrown(InternalServerError)
+     * Moreover if the object with that given id does not exsit an exception will be thrown(ModelWithIdNotFound)
+     * @param {String} id 
+     * @returns 
+     */
+    getModelObjectById(id){
+        return getModelObjectWithId(this.getModel(),id)
+    }
+
+    /**
+     * Get the all objects with a limit and a skip
+     * mostly used to retrive data for data tables
+     * with the limit and skip
+     * @param {Number} limit 
+     * @param {Number} skip 
+     * @returns 
+     */
+    getModelObjectsWithAll(limit=10,skip=0){
+        return getAllModelsObjects(this.getModel(),limit,skip);
+    }
+
+    createModelObject(validatedData){
+
     }
 
 }
