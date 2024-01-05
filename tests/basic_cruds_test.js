@@ -20,3 +20,6 @@ app.get("",(req,res) => res.status(200).send("tes"))
 app.listen(8000,() => {
     console.log("I'm listening")
 })
+
+
+

@@ -25,14 +25,18 @@ const { InternalServerError, ModelWithIdNotFound } = require(".")
  */
 async function getModelObjectWithId(model,id){
     try{
+        // await until we receive the data
         const response = await model.findOne({_id:id})
+        // if the data we recive is none throw an error
         if(!response)throw new ModelWithIdNotFound()
+        // if not return the queried model
         return response
     }catch(error){
-        console.error(error)
+        // if a error occure we simply throw an internal server error
         throw new InternalServerError()
     }
 
 }
 
-module.exports = {getUserById: getModelObjectWithId}
+
+module.exports = { getModelObjectWithId}

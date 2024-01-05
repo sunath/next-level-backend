@@ -2,6 +2,8 @@ const { Schema, default: mongoose } = require("mongoose");
 const iterateList = require("../utils/iterateAndPrint")
 const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
 const { typeChecking, unqiueValidator } = require("./validators");
+const {getModelObjectWithId}  = require("../actions/getActions");
+const { ModelWithIdNotFound } = require("../actions");
 
 /**
  * Base class for every data class
@@ -226,6 +228,27 @@ class DataClassFacotry{
     // Create new class factory to the given class
     static createFactory(cls){
         return new DataClassFacotry(cls);
+    }
+
+
+    /**
+     * Return an object of the constructed class with the given id
+     * if the object is not found throw an ModelWithIdNotFound error
+     * Or if anything goes wrong throw an InternalServerError 
+     * @param {String} id - id of the object
+     * @returns {Object}
+     */
+    async getObjectById(id){
+        const object =  await getModelObjectWithId(this.getModel(),id);
+        return object;
+    }
+
+    /**
+     * 
+     * @param {*} validatedData 
+     */
+    async createObject(validatedData){
+
     }
 
 }
