@@ -48,16 +48,7 @@ function applyBasicCrud(router,cls){
     /**
      * Post request
      */
-    router.post("",async function(req,res){
-        const object = classFactory.createObject(req.body)
-        const response = await object.validate()
-        if(!response.data.okay)return res.status(400).send(response.data)
-        const obj = classFactory.model(req.body)
-        obj.save().then(e => {
-            return res.status(200).send(e)
-        })
-        
-    })
+    addModelPost(router,classFactory)
 }
 
 
@@ -143,10 +134,22 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
 
 
 /**
- * 
+ *add a basic post endpoint create a new object of a model
+ * @param {Router} router
+ * @param {DataClassFacotry} classFactory
  */
-function addModel(){
-
+function addModelPost(router,classFactory){
+    router.post("/",async function(req,res){
+        let response = await classFactory.createObject(req.data).validate()
+        if(!response.okay)return res.status(400).send(response)
+        try{
+            response = await classFactory.createModelObject(req.data)
+            return res.status(200).send(response)
+        }catch(error){
+            return res.status(500).send({'error':"Internal server error"})
+        }
+       
+    })
 }
 
 module.exports = {applyBasicCrud,ERROR_CODES}

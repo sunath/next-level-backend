@@ -2,7 +2,7 @@ const { Schema, default: mongoose } = require("mongoose");
 const iterateList = require("../utils/iterateAndPrint")
 const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
 const { typeChecking, unqiueValidator } = require("./validators");
-const  {getModelObjectWithId,getAllModelsObjects} = require("../actions")
+const  {getModelObjectWithId,getAllModelsObjects,addNewObjectToCollection} = require("../actions")
 
 /**
  * Base class for every data class
@@ -251,8 +251,13 @@ class DataClassFacotry{
         return getAllModelsObjects(this.getModel(),limit,skip);
     }
 
+    /**
+     * create a new object of the data class in the database
+     * @param {Object} validatedData - data that gone through the data class validation process
+     * @returns {Promise<Object>}
+     */
     createModelObject(validatedData){
-
+            return addNewObjectToCollection(validatedData)
     }
 
 }

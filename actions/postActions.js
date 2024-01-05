@@ -7,7 +7,7 @@ const {Error} = require("mongoose")
  * then return the object given by the mongodb
  * @param {Model} model 
  * @param {Object} validatedData 
- * @returns {Object[]}
+ * @returns {Promise<Object>}
  */
 async function addNewObjectToCollection(model,validatedData){
     try{
