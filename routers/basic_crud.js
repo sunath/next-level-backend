@@ -152,4 +152,16 @@ function addModelPost(router,classFactory){
     })
 }
 
+/**
+ * a dynamic view to write the update route  for any model
+ * @param {Router} router 
+ * @param {DataClassFacotry} classFactory 
+ * @param {Object} changes 
+ */
+function updateModel(router,classFactory,changes){
+    router.put("/",async function(req,res){
+        
+    })
+}
+
 module.exports = {applyBasicCrud,ERROR_CODES}

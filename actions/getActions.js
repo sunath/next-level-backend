@@ -25,49 +25,16 @@ const { InternalServerError, ModelWithIdNotFound } = require(".")
  */
 async function getModelObjectWithId(model,id,columns){
     try{
-        const response = await model.findOne({_id:id},columns)
+        const response = await model.findOne({_id:id})
         if(!response)throw new ModelWithIdNotFound()
+        // if not return the queried model
         return response
     }catch(error){
-        console.error(error)
+        // if a error occure we simply throw an internal server error
         throw new InternalServerError()
     }
 
 }
 
 
-
-
-/**
- * get objects with restrictions of limit and skip
- * return all the objects that given by the query
- * if an error ocuured throw an internal server error
- * @param {Model} model - mongoose model
- * @param {Number} limit - amount of objects you wanna limit
- * @param {Number} skip - how many objects you wanna skip
- * 
- * 
- * @example
- * try{
- * // get the first ten objects
- * const models = await  getAllObjects(model,10,0);
- *  // return the objectcs that received by the model
- *  return res.status(200).send(models)
- * }catch(error){
- * // If an error ouccred send an internal server error response
- *  return res.status(500).send("Internal server error")
- * }
- * 
- * @returns {Promise<Object[]>}
- */
-async function getAllModelsObjects(model,limit=10,skip=0){
-    try{
-        const objects = await model.find({}).skip(skip).limit(limit)
-        return objects
-    }catch(error){
-        throw new InternalServerError("database query could not perform")
-    }
-}
-
-
-module.exports = {getModelObjectWithId,getAllModelsObjects}
+module.exports = {getUserById: getModelObjectWithId}

@@ -260,6 +260,9 @@ class DataClassFacotry{
             return addNewObjectToCollection(validatedData)
     }
 
+
+    updateModelObject(){}
+
 }
 
 
