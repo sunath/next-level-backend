@@ -15,7 +15,10 @@ const { DataClassFacotry } = require("../dataclasses/base");
  * @returns {null} 
  */
 async function updateTheModelWithTheId(id,model,classFacotry,payload){
+    // get the object if its exist
+    // if an error thrown it's has to be handle by the high order function
     const obj = await getUserById(model,id);
+    // create a new object temperaroy w
     const tempObj = classFacotry.createObject(obj);
     const objectValidations = await tempObj.validate();
     if(objectValidations)return objectValidations;

@@ -2,7 +2,8 @@ const { Schema, default: mongoose } = require("mongoose");
 const iterateList = require("../utils/iterateAndPrint")
 const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
 const { typeChecking, unqiueValidator } = require("./validators");
-const  {getModelObjectWithId,getAllModelsObjects,addNewObjectToCollection} = require("../actions")
+const  {getModelObjectWithId,getAllModelsObjects,addNewObjectToCollection} = require("../actions");
+const { linearFindMaxNumber } = require("../utils/linearAlogirthms");
 
 /**
  * Base class for every data class
@@ -105,6 +106,54 @@ class DataClass{
         }
 
         return {data:{okay:true}}
+    }
+
+    /**
+     * this only takes the data given and check the data is okay according to the model
+     * validations done just like the normal validate function in the model
+     * but the other fields that are not in payload will not be cared
+     * suitable for run before updating data releated to a model
+     * of course it means you should do it no matter what if you like to write code
+     * @param {Object} payload - key value pair 
+     * @returns {Object || Null} return an Object which contains error data or null if there's no errors
+     */
+    async validateOnlyPayload(payload){
+        // get the fields that has to be validated
+        const validateFields = Object.keys(payload)
+
+        function getTheLengthOfValidateField(field){
+            return this.validations[field].length
+        }
+        // get the maximum loops we have to run 
+        const maximumNumber = linearFindMaxNumber(validateFields,getTheLengthOfValidateField.bind(this));
+        //
+        for(let i = 0; i < maximumNumber;i++){
+            for(let j = 0 ; j < validateFields.length;j++){
+                // get the field that needs to be validated
+                const validateField = this.validations[validateFields[j]];
+                // check wether it has run all the validations
+                // if it is continue to next field;
+                if(validateField.length > i )continue;
+                // else get the next validation function
+                const validation = validateField[i];
+                // extract the value to pass to the validation function
+                const validateValue = payload[validateFields[j]]
+                // get the returned promise
+                const validatePromise = validation(payload[validateValue]);
+                // check weather output matches with our pattern
+                // user must return a promise
+                if(!checkTheObjectPromiseOrNot(validatePromise))throw new NotReturnPromiseError("A promise should be returned;");
+                // if all clear wait till the validated output
+                const validatedOutput = await validatePromise()
+                // it it's not okay return the error data and the field
+                if(!validatedOutput.okay){
+                    return {data:validatedOutput,field:validateFields[j]}
+                }             
+            }
+        }
+
+        // all ran successfully
+        return {data:{okay:true}};
     }
 
     getName(){
