@@ -1,8 +1,9 @@
 const { Router } = require("express");
 const { applyBasicCrud } = require("../routers/basic_crud");
-const { UserDataClass } = require("./dataclassTest");
+const { UserDataClass,UserDataClassFactory } = require("./dataclassTest");
 const express  = require("express")
 const app = express()
+app.use(express.json())
 
 const mongoose = require("mongoose")
 

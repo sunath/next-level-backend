@@ -4,6 +4,8 @@ const checkTheObjectPromiseOrNot = require("../utils/promiseChecking");
 const { typeChecking, unqiueValidator } = require("./validators");
 const  {getModelObjectWithId,getAllModelsObjects,addNewObjectToCollection} = require("../actions");
 const { linearFindMaxNumber } = require("../utils/linearAlogirthms");
+const {getModelObjectWithPayload} = require("../actions/getActions");
+const {updateTheModelWithTheId} = require("../actions/putActions");
 
 /**
  * Base class for every data class
@@ -118,6 +120,7 @@ class DataClass{
      * @returns {Object || Null} return an Object which contains error data or null if there's no errors
      */
     async validateOnlyPayload(payload){
+
         // get the fields that has to be validated
         const validateFields = Object.keys(payload)
 
@@ -133,19 +136,26 @@ class DataClass{
                 const validateField = this.validations[validateFields[j]];
                 // check wether it has run all the validations
                 // if it is continue to next field;
-                if(validateField.length > i )continue;
+                console.log(validateField.length,i)
+                if(validateField.length <= i ){
+                    continue;
+                }
                 // else get the next validation function
                 const validation = validateField[i];
                 // extract the value to pass to the validation function
                 const validateValue = payload[validateFields[j]]
                 // get the returned promise
-                const validatePromise = validation(payload[validateValue]);
+                const validatePromise = validation(validateValue);
                 // check weather output matches with our pattern
                 // user must return a promise
-                if(!checkTheObjectPromiseOrNot(validatePromise))throw new NotReturnPromiseError("A promise should be returned;");
+                console.log("validate promise ",validatePromise,validateValue,typeof validateValue)
+                if(!checkTheObjectPromiseOrNot(validatePromise)){
+                    throw new NotReturnPromiseError("A promise should be returned;");
+                }
                 // if all clear wait till the validated output
                 const validatedOutput = await validatePromise()
                 // it it's not okay return the error data and the field
+                console.log(validatedOutput," this is validated")
                 if(!validatedOutput.okay){
                     return {data:validatedOutput,field:validateFields[j]}
                 }             
@@ -233,8 +243,8 @@ class DataClassFacotry{
     static models = {}
 
     // Mainly used to get the subclass
-    constructor(cls,metaData){
-        this.dataClass = cls;
+    constructor(dataClass,metaData){
+        this.dataClass = dataClass;
         this.model = this.getModel()
         this.metaData = metaData;
     }
@@ -300,6 +310,10 @@ class DataClassFacotry{
         return getAllModelsObjects(this.getModel(),limit,skip);
     }
 
+    getModelWithPayload(query){
+        return getModelObjectWithPayload(this.getModel(),query)
+    }
+
     /**
      * create a new object of the data class in the database
      * @param {Object} validatedData - data that gone through the data class validation process
@@ -310,7 +324,34 @@ class DataClassFacotry{
     }
 
 
-    updateModelObject(){}
+    /**
+     * Update the model belong the factory class
+     * query will be executed through model and find the object exist
+     * then the payload will be checked with their validations only
+     * if no error occur model will be updated
+     *  @param query
+     * @param payload
+     * @returns {Promise<void>}
+     */
+    async updateModelObject(query,payload){
+
+        // get the model with the payload
+        const model = await this.getModelWithPayload(query)
+        // create an empty object of the dataclass
+        const dataClass1 = new this.dataClass()
+        // init with model data
+        dataClass1.init(model)
+        // validate the payload data
+        const response = await dataClass1.validateOnlyPayload(payload)
+        // if no error occur update the model
+        if(response.data.okay){
+            // update the model with the id
+            await updateTheModelWithTheId(model._id,this.getModel(),this,payload)
+        }else{
+            // throw an error with the error given by the
+            return response
+        }
+    }
 
 }
 

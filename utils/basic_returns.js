@@ -8,7 +8,7 @@ const { ERROR_CODES } = require("../routers/basic_crud");
  * @returns {Response}
  */
 function sendInternalServerError(res){
-    return res.status(500).send({'error':"Internal Server error",'errorId':ERROR_CODES.INTERNAL_SERVER_ERROR})
+    return res.status(500).send({'error':"Internal Server error",'errorId':3})
 }
 
 

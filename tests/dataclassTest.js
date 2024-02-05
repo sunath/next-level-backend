@@ -27,14 +27,4 @@ class UserDataClass extends DataClass {
 }
 
 const UserDataClassFactory = DataClassFacotry.createFactory(UserDataClass)
-
-console.log(UserDataClassFactory.getModel())
-let userData = UserDataClassFactory.createObject({'username':"Sunath",'password':"It's a secret",age:"56"})
-
-const returnData = userData.validate()
-returnData.then(e => {
-    console.log(e)
-    console.log(userData.model)
-})
-
 module.exports = {UserDataClassFactory,UserDataClass}

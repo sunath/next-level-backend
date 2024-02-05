@@ -27,8 +27,8 @@ function applyBasicCrud(router,cls){
     const model = classFactory.getModel();
 
     // add the get by id facility
-    addGetById(router,model);
-    getAllObjects(router,model);
+    addGetById(router,classFactory);
+    getAllObjects(router,classFactory);
 
 
     /**
@@ -49,6 +49,10 @@ function applyBasicCrud(router,cls){
      * Post request
      */
     addModelPost(router,classFactory)
+
+
+    // update the model
+    addModelPut(router,classFactory)
 }
 
 
@@ -77,10 +81,11 @@ function addGetById(router,factory){
         }else{
 
             try{
-                // get the object by the factory class 
+                // get the object by the factory class
                 const object = await factory.getModelObjectById(id)
                 return sendGetItemsResponse(res,object)
             }catch(error){
+
                 // if the id do not exists
                 if(error instanceof ModelWithIdNotFound){
                     // send an 404 error
@@ -120,7 +125,6 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
         skip = req.query['skip'] || skip
 
         try{
-            // retrive the objects
             const models = await dataClassFactory.getModelObjectsWithAll(limit,skip)
             // send items to the user
             return sendGetItemsResponse(res,models)
@@ -140,10 +144,11 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
  */
 function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
-        let response = await classFactory.createObject(req.data).validate()
+
+        let response = await classFactory.createObject(req.body).validate()
         if(!response.okay)return res.status(400).send(response)
         try{
-            response = await classFactory.createModelObject(req.data)
+            response = await classFactory.createModelObject(req.body)
             return res.status(200).send(response)
         }catch(error){
             return res.status(500).send({'error':"Internal server error"})
@@ -158,9 +163,15 @@ function addModelPost(router,classFactory){
  * @param {DataClassFacotry} classFactory 
  * @param {Object} changes 
  */
-function updateModel(router,classFactory,changes){
+function addModelPut(router,classFactory,changes){
     router.put("/",async function(req,res){
-        
+       try{
+           const data = await classFactory.updateModelObject(req.body.query,req.body.payload)
+           return res.status(200).send("good")
+       }catch (error){
+           return sendInternalServerError(res)
+       }
+
     })
 }
 

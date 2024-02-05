@@ -1,5 +1,6 @@
 const { Document } = require("mongoose");
-const { ModelWithIdNotFound, InternalServerError, getUserById } = require(".");
+const { ModelWithIdNotFound, InternalServerError } = require("./errors");
+const {getModelObjectWithId} = require("./getActions")
 const { DataClassFacotry } = require("../dataclasses/base");
 
 
@@ -17,12 +18,10 @@ const { DataClassFacotry } = require("../dataclasses/base");
 async function updateTheModelWithTheId(id,model,classFacotry,payload){
     // get the object if its exist
     // if an error thrown it's has to be handle by the high order function
-    const obj = await getUserById(model,id);
-    // create a new object temperaroy w
-    const tempObj = classFacotry.createObject(obj);
-    const objectValidations = await tempObj.validate();
-    if(objectValidations)return objectValidations;
-    await obj.update(payload)
+    const obj = await getModelObjectWithId(model,id);
+    await classFacotry.getModel().updateOne({_id:id},payload)
     return null;
     
 }
+
+module.exports = {updateTheModelWithTheId}

@@ -58,6 +58,7 @@ function maxLength(length,errorMsg){
  */
 function typeChecking(type,field){
     return functionToPromise((resolve,reject,value) => {
+        console.log(typeof(value) , type.name.toLowerCase())
         if(typeof(value) == type.name.toLowerCase())resolve({okay:true})
         resolve({okay:false,error:`${field} must be a ${type.name}`})
     })
