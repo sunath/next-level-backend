@@ -83,11 +83,17 @@ function typeChecking(type,field){
 function unqiueValidator(field,model){
 
     function unique(resolve,reject,value){
+   
         model.findOne({[field]:value}).then(e => {
+
+            console.log({[field]:value})
+            console.log(field,model,e)
             if(e){
                 resolve({error:field+" is already used. try a different one",okay:false})
             }
             resolve({okay:true})
+        }).catch(error => {
+            console.log("erro happned")
         })
     }
 

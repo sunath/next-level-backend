@@ -146,7 +146,11 @@ function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
 
         let response = await classFactory.createObject(req.body).validate()
-        if(!response.okay)return res.status(400).send(response)
+        console.log(response , " this is the response")
+        if(!response.data.okay){
+            console.log("we return")
+            return res.status(400).send(response)
+        }
         try{
             response = await classFactory.createModelObject(req.body)
             return res.status(200).send(response)
@@ -167,8 +171,9 @@ function addModelPut(router,classFactory,changes){
     router.put("/",async function(req,res){
        try{
            const data = await classFactory.updateModelObject(req.body.query,req.body.payload)
-           return res.status(200).send("good")
+           return res.status(200).send(data)
        }catch (error){
+        console.log(error)
            return sendInternalServerError(res)
        }
 

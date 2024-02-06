@@ -53,6 +53,7 @@ class DataClass{
 
             // add the unique validator if the we have the unique in the property attributes
             if(this[property]['unique']){
+                console.log(property,this.model)
                 validations[property].push(unqiueValidator(property,this.model))
             }
         })
@@ -67,6 +68,8 @@ class DataClass{
             get:() => data
         })
     }
+
+
 
 
     async validate(){
@@ -94,12 +97,13 @@ class DataClass{
                 if(i >= element_validations.length)continue
                 // grab the validations next function
                 const validation  = element_validations[i]
-                // validate it 
+                // validate it
                 const outputPromise = validation(this.form_data[validateKeys[j]])
                 // Check weather our output is correct or not
                 if(!checkTheObjectPromiseOrNot(outputPromise))throw new NotReturnPromiseError("promised object must be returned");
                 // Get the promise data
                 const data = await outputPromise;
+                // console.log(data)
                 // if data is not okay return a payload else return nothing of course
                 if(!data.okay){
                     return {data:data,field:validateKeys[j]}
@@ -136,7 +140,7 @@ class DataClass{
                 const validateField = this.validations[validateFields[j]];
                 // check wether it has run all the validations
                 // if it is continue to next field;
-                console.log(validateField.length,i)
+            
                 if(validateField.length <= i ){
                     continue;
                 }
@@ -148,14 +152,12 @@ class DataClass{
                 const validatePromise = validation(validateValue);
                 // check weather output matches with our pattern
                 // user must return a promise
-                console.log("validate promise ",validatePromise,validateValue,typeof validateValue)
                 if(!checkTheObjectPromiseOrNot(validatePromise)){
                     throw new NotReturnPromiseError("A promise should be returned;");
                 }
                 // if all clear wait till the validated output
-                const validatedOutput = await validatePromise()
+                const validatedOutput = await validatePromise
                 // it it's not okay return the error data and the field
-                console.log(validatedOutput," this is validated")
                 if(!validatedOutput.okay){
                     return {data:validatedOutput,field:validateFields[j]}
                 }             
@@ -247,6 +249,7 @@ class DataClassFacotry{
         this.dataClass = dataClass;
         this.model = this.getModel()
         this.metaData = metaData;
+        console.log(this.model)
     }
    
     /**
@@ -258,7 +261,8 @@ class DataClassFacotry{
         // Init a new object
         let object = new this.dataClass()
          //set the model
-        object.model = DataClassFacotry.models[object.getName()]
+        object.model = this.model
+
         // Check wether object is a data class or not
         if(!(object instanceof DataClass))throw new InvalidDataClassError("Data class is invalid");
         // extract field information
@@ -320,7 +324,7 @@ class DataClassFacotry{
      * @returns {Promise<Object>}
      */
     createModelObject(validatedData){
-            return addNewObjectToCollection(validatedData)
+            return addNewObjectToCollection(this.model,validatedData)
     }
 
 
@@ -339,6 +343,7 @@ class DataClassFacotry{
         const model = await this.getModelWithPayload(query)
         // create an empty object of the dataclass
         const dataClass1 = new this.dataClass()
+        dataClass1.model = this.model
         // init with model data
         dataClass1.init(model)
         // validate the payload data
