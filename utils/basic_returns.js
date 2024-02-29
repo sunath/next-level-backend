@@ -26,4 +26,15 @@ function sendGetItemsResponse(res,data){
     return res.status(200).send(data)
 }
 
-module.exports = {sendInternalServerError,sendGetItemsResponse}
+
+/**
+ * a shortcut method for sending response for bad data request in data class
+ * simply get the field and the error , send it to the user as a Object
+ * @param {Express.Response} res 
+ * @param {Object} validationResponse - Validation response of the data class object
+ */
+function sendErrorWithValidationErrorResponse(res,validationResponse){
+    res.status(400).send({'error':validationResponse.data.error,'field':validationResponse.field})
+}
+
+module.exports = {sendInternalServerError,sendGetItemsResponse,sendErrorWithValidationErrorResponse}

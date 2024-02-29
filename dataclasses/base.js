@@ -269,7 +269,8 @@ class DataClassFacotry{
         object.init(data)
         // set the attriubute values
         iterateList(DataClass.getOwnPropertyNames(object),(e) => {
-            object[e] = data[e]
+    
+            object[e] = data[e] || undefined
         })
         // return the customize object
         return object
