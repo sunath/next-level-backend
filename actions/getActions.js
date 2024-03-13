@@ -65,7 +65,7 @@ async function getModelObjectWithPayload(model,query){
  * @returns {Promise<Mongoose.Model>}
  */
 async function getAllModelsObjects(model,limit,skip){
-        const models = await model.find().limit(limit).skip()
+        const models = await model.find().limit(limit).skip(skip)
         return models
 }
 module.exports = {getModelObjectWithId,getModelObjectWithPayload,getAllModelsObjects}

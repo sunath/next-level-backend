@@ -9,8 +9,10 @@ const mongoose = require("mongoose");
 const { createSecurityAccessMiddleware, CreateSecurityAccessTokenError } = require("../middleware/seucrityAccessMiddleware");
 const { DataClass, DataClassFacotry } = require("../dataclasses/base");
 const { is_required } = require("../dataclasses/validators");
-const { sendErrorWithValidationErrorResponse } = require("../utils/basic_returns");
-const { getModelObjectWithPayload, ModelWithQueryNotFound } = require("../actions");
+const { sendErrorWithValidationErrorResponse, sendInternalServerError } = require("../utils/basic_returns");
+const { getModelObjectWithPayload, ModelWithQueryNotFound, InternalServerError } = require("../actions");
+const { addNotFoundMiddleware } = require("../middleware/notFoundMiddleware");
+const { modelDataValidationMiddleware } = require("../middleware/dataValidationMiddleware");
 
 mongoose.connect("mongodb+srv://next-level-backend:jAe5v6ASvlCsqUwg@cluster0.tc7v1.mongodb.net/next-level-backend?retryWrites=true&w=majority")
 
@@ -40,30 +42,19 @@ app.use(express.json({strict:false}))
 app.use("/user",userRouter)
 
 
-userRouter.post("/accesstoken",async function (req,res)  {
-    const {create} = createSecurityAccessMiddleware( async (data) => {
-        console.log(data)
-        const obj = UserLoggedFactory.createObject(data);
-        const response = await obj.validate()
-        if(response.data.okay){
-            try{
-                const modelObject = await getModelObjectWithPayload(UserDataClassFactory,data)
-            }catch(error){
-                if(error instanceof ModelWithQueryNotFound){
-                    
-                }
-            }
-            
-        }
-        return response;
-    },"hrfehjr3nmnrb3nvbrc3v nr3mnrb3hnhbrh3ghrv3")
-
+userRouter.post("/accesstoken",modelDataValidationMiddleware(UserLoggedFactory),addNotFoundMiddleware(UserDataClassFactory.getModel(),(data) => data,403,"Invalid Credentials"),async function (req,res)  {
     try{
-        const token = await create(req.body)
+        console.log(req.headers.modelObject,"this is the modek object")
+        const token = "hello"
+        // const token = await create({username,_id})
         return res.status(200).send(token)
     }catch(error){
+        console.log(error)
         if(error instanceof CreateSecurityAccessTokenError){
-            return sendErrorWithValidationErrorResponse(res,error.errorDetails)
+            return res.status(500).send(error.errorDetails)
+        }
+        else if(error instanceof InternalServerError){
+            return sendInternalServerError(res)
         }
         return res.status(400).send("some kind of error")
     }

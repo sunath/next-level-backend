@@ -1,3 +1,4 @@
+const { InternalServerError } = require("../actions");
 const { functionToPromise } = require("../utils/functionToPromise");
 const {sign} = require("jsonwebtoken")
 
@@ -19,6 +20,10 @@ function createSecurityAccessMiddleware(securityAccessTokenValidation,secret){
 
     async function createSecurityAccessToken(data,tokenexpiresInSecond=60*60){
         const response = await securityAccessTokenValidation(data);
+        console.log(response, " this is the response")
+        if(response instanceof InternalServerError){
+            throw response;
+        }
         if(response){
             const error = new CreateSecurityAccessTokenError(response);
             error.errorDetails = response
