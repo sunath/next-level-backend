@@ -24,9 +24,10 @@ const {ModelWithQueryNotFound} = require("./errors");
  * @returns {Object}    - Queried Object
  * 
  */
-async function getModelObjectWithId(model,id,columns){
+async function getModelObjectWithId(model,id,columns=null){
+    console.log(columns)
     try{
-        const response = await model.findOne({_id:id})
+        const response = await model.findOne({_id:id},columns)
         if(!response)throw new Error("no model found")
         // if not return the queried model
         return response

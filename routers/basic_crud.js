@@ -82,7 +82,7 @@ function addGetById(router,factory){
 
             try{
                 // get the object by the factory class
-                const object = await factory.getModelObjectById(id)
+                const object = await factory.getModelObjectById(id,null)
                 return sendGetItemsResponse(res,object)
             }catch(error){
 

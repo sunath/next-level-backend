@@ -24,7 +24,12 @@ class UserDataClass extends DataClass {
         return "users"
     }
 
+    getRemovableFields(){
+        return ['password']
+    }
+
 }
 
-const UserDataClassFactory = DataClassFacotry.createFactory(UserDataClass)
+const UserDataClassFactory = DataClassFacotry.createFactory(UserDataClass,["password"])
+// UserDataClassFactory.setRemovableFields(['password'])
 module.exports = {UserDataClassFactory,UserDataClass}

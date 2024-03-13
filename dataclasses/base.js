@@ -16,6 +16,9 @@ const {updateTheModelWithTheId} = require("../actions/putActions");
  */
 class DataClass{
 
+    getRemovableFields(){
+        return []
+    }
     
     /**
      * A function to validate user data
@@ -71,7 +74,10 @@ class DataClass{
 
 
 
-
+    /**
+     * validate the fields in the data class 
+     * @returns {Object}
+     */
     async validate(){
        
         // Get the all fields of the validations in the class
@@ -240,6 +246,7 @@ class DataClassFacotry{
     // Store the subclass of the DataClass
     dataClass;
     model;
+    removeByDefaultFields = [];
 
 
     static models = {}
@@ -249,7 +256,9 @@ class DataClassFacotry{
         this.dataClass = dataClass;
         this.model = this.getModel()
         this.metaData = metaData;
+        this.removeByDefaultFields = []
         console.log(this.model)
+        this.getModelObjectById = this.getModelObjectById.bind(this)
     }
    
     /**
@@ -287,8 +296,10 @@ class DataClassFacotry{
     }
 
     // Create new class factory to the given class
-    static createFactory(cls){
-        return new DataClassFacotry(cls);
+    static createFactory(cls,removeFields=[]){
+        const c =  new DataClassFacotry(cls,removeFields);
+        c.removeByDefaultFields = removeFields
+        return c
     }
 
     /**
@@ -299,8 +310,13 @@ class DataClassFacotry{
      * @param {String} id 
      * @returns 
      */
-    getModelObjectById(id){
-        return getModelObjectWithId(this.getModel(),id)
+    getModelObjectById(id,removeColumns=null,onlyColumns=null){
+        const o = new  this.dataClass()
+        return getModelObjectWithId(this.getModel(),id,onlyColumns || this.getModelFieldsExpect(removeColumns || o.getRemovableFields()))
+    }
+
+    setRemovableFields(f){
+        this.fields = f
     }
 
     /**
@@ -358,6 +374,28 @@ class DataClassFacotry{
             return response
         }
     }
+
+    // fields of the model
+    fields = []
+
+    // returns the fields of the model
+    getModelFields(){
+        if(this.fields.length == 0){
+            const cls = new this.dataClass()
+            const modelFields = this.dataClass.getOwnPropertyNames(cls);
+            this.fields = modelFields
+        }
+        return this.fields;
+    }
+
+    // returns the field of the model expect the one you don't want
+    getModelFieldsExpect(fields){
+        const filteredFields = this.getModelFields().filter((e) => fields.indexOf(e) < 0)
+        return filteredFields;
+    }
+
+
+
 
 }
 

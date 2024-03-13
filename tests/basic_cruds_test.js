@@ -5,6 +5,8 @@ const express  = require("express")
 const app = express()
 app.use(express.json())
 
+
+
 const mongoose = require("mongoose");
 const { createSecurityAccessMiddleware, CreateSecurityAccessTokenError } = require("../middleware/seucrityAccessMiddleware");
 const { DataClass, DataClassFacotry } = require("../dataclasses/base");
@@ -85,5 +87,6 @@ userRouter.get("/userSecret",securityTokenMiddleware,async function(req,res){
 
 app.get("",(req,res) => res.status(200).send("tes"))
 app.listen(8000,() => {
+    console.log(UserDataClassFactory.removableFieldsbyDefault, " these are must be removed")
     console.log("I'm listening")
 })
