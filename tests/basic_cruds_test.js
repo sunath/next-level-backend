@@ -13,9 +13,11 @@ const { sendErrorWithValidationErrorResponse, sendInternalServerError } = requir
 const { getModelObjectWithPayload, ModelWithQueryNotFound, InternalServerError } = require("../actions");
 const { addNotFoundMiddleware } = require("../middleware/notFoundMiddleware");
 const { modelDataValidationMiddleware } = require("../middleware/dataValidationMiddleware");
+const { runMiddlewares } = require("../middleware/runMiddlwares");
+const { removeFieldsAndReturnTheObject } = require("../utils/removeFieldsAndGetTheObject");
 
-mongoose.connect("mongodb+srv://next-level-backend:jAe5v6ASvlCsqUwg@cluster0.tc7v1.mongodb.net/next-level-backend?retryWrites=true&w=majority")
-
+// mongoose.connect("mongodb+srv://next-level-backend:jAe5v6ASvlCsqUwg@cluster0.tc7v1.mongodb.net/next-level-backend?retryWrites=true&w=majority")
+mongoose.connect("mongodb://localhost:27017")
 
 class UserLogDataClass extends DataClass{
     username = {
@@ -41,12 +43,26 @@ applyBasicCrud(userRouter,UserDataClass);
 app.use(express.json({strict:false}))
 app.use("/user",userRouter)
 
+const {create}= createSecurityAccessMiddleware("fhejhfwjfbehfevgfenenwn3be3br b3  r3 rb3  r3 ")
 
-userRouter.post("/accesstoken",modelDataValidationMiddleware(UserLoggedFactory),addNotFoundMiddleware(UserDataClassFactory.getModel(),(data) => data,403,"Invalid Credentials"),async function (req,res)  {
+const userLoggedModelDataValiation = modelDataValidationMiddleware(UserLoggedFactory)
+const addNotFoundMiddlewareValidation = addNotFoundMiddleware(UserDataClassFactory.getModel(),(data) => data,403,"Invalid Credentials");
+userRouter.post("/accesstoken",async function (req,res)  {
+//    let response = await userLoggedModelDataValiation(req,res)
+//    if(response)return response;
+//    response = await addNotFoundMiddlewareValidation(req,res)
+//    if(response){
+//     return response;
+//    }
+    const response = await runMiddlewares(req,res,[userLoggedModelDataValiation,addNotFoundMiddlewareValidation]);
+    if(response){
+       return response;
+    }
     try{
         console.log(req.headers.modelObject,"this is the modek object")
-        const token = "hello"
-        // const token = await create({username,_id})
+        const data = removeFieldsAndReturnTheObject(JSON.parse(JSON.stringify(req.headers.modelObject)),["password"])
+        console.log(data, " this is data")
+        const token = await create(data)
         return res.status(200).send(token)
     }catch(error){
         console.log(error)
