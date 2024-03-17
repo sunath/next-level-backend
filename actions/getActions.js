@@ -1,6 +1,7 @@
-const { InternalServerError, ModelWithIdNotFound } = require("./errors")
+const { ObjectId } = require("mongodb");
+const { InternalServerError, ModelWithIdNotFound, MongooseInvalidId } = require("./errors")
 const {ModelWithQueryNotFound} = require("./errors");
-
+const {isValidObjectId} = require("mongoose")
 /**
  * find an object by the object id
  * if a database or some kind of system error to be found it might return an internal server error
@@ -25,8 +26,14 @@ const {ModelWithQueryNotFound} = require("./errors");
  * 
  */
 async function getModelObjectWithId(model,id,columns=null){
-    console.log(columns)
     try{
+    
+        // console.log(new ObjectId(id))
+        const isValid = isValidObjectId(id)
+        console.log(isValid)
+        if(!isValid){
+            throw new MongooseInvalidId("id is invalid.please input a correct id")
+        }
         const response = await model.findOne({_id:id},columns)
         if(!response)throw new Error("no model found")
         // if not return the queried model

@@ -1,8 +1,9 @@
-const { Model } = require("mongoose");
+const { Model, deleteModel } = require("mongoose");
 const { DataClass, DataClassFacotry } = require("../dataclasses/base");
 const {Router} = require("express");
 const { sendInternalServerError, sendGetItemsResponse } = require("../utils/basic_returns");
-const { ModelWithIdNotFound } = require("../actions");
+const { ModelWithIdNotFound, MongooseInvalidId } = require("../actions");
+const { deleteObjectFromCollection } = require("../actions/deleteActions");
 
 
 
@@ -53,6 +54,9 @@ function applyBasicCrud(router,cls){
 
     // update the model
     addModelPut(router,classFactory)
+
+    // delete the mode 
+    addModelDelete(router,classFactory)
 }
 
 
@@ -85,7 +89,9 @@ function addGetById(router,factory){
                 const object = await factory.getModelObjectById(id,null)
                 return sendGetItemsResponse(res,object)
             }catch(error){
-                console.log(error)
+                if(error instanceof MongooseInvalidId){
+                    return res.status(400).send("id is invalid")
+                }
                 // if the id do not exists
                 if(error instanceof ModelWithIdNotFound){
                     // send an 404 error
@@ -180,4 +186,35 @@ function addModelPut(router,classFactory,changes){
     })
 }
 
-module.exports = {applyBasicCrud,ERROR_CODES}
+/**
+ * delete a model with a specific id if only exist
+ * a simple view
+ * take an id
+ * then try to find it exist or not
+ * if it's exist then delete
+ * otherwise throw an error 
+ * @param {Express.Router} router 
+ * @param {*} classFactory 
+ */
+function addModelDelete(router,classFactory){
+    router.delete("/",async function(req,res){
+
+        try{
+            const id = req.query['id']
+            console.log(id)
+            if(!id){
+                return res.status(400).send("id must be defined")
+            }
+            const response = await deleteObjectFromCollection(classFactory.getModel(),id)
+            return res.status(204).send("")
+        }catch(error){
+            console.log(error)
+            return res.status(400).send(error.message)
+        }
+      
+    })
+    
+}
+
+
+module.exports = {applyBasicCrud,ERROR_CODES,addGetById,addModelPost,addModelPut}
