@@ -46,6 +46,7 @@ class DataClass{
         const properties = DataClass.getOwnPropertyNames(this);
         // Initialize the validations into an empty list
        let validations = {}
+       let beforeValidationsFunctions = {}
         // Iterate through all the properties 
         iterateList(properties,(property) => {
             // Set the validations of the property into a new dictionary
@@ -59,6 +60,10 @@ class DataClass{
                 console.log(property,this.model)
                 validations[property].push(unqiueValidator(property,this.model))
             }
+            console.log(this[property])
+            if(this[property]['beforeValidation']){                
+                beforeValidationsFunctions[property] = this[property]['beforeValidation']
+            }
         })
 
         // Define the validations in the object properites 
@@ -67,9 +72,24 @@ class DataClass{
             get:() => validations
         })
 
+        Object.defineProperty(this,'before_validations',{
+            get:() => beforeValidationsFunctions
+        })
+
+        console.log("before validation functions ",beforeValidationsFunctions)
+
         Object.defineProperty(this,'form_data',{
             get:() => data
         })
+    }
+
+    async transformValidateDataToBeSaved(validatedData){
+        const keys = Object.keys(this.before_validations)
+        const obj = Object.assign({},validatedData)
+        for(let i = 0 ; i < keys.length;i++){
+            obj[keys[i]] = await this.before_validations[keys[i]](validatedData[keys[i]])
+        }
+    return obj
     }
 
 
@@ -103,8 +123,14 @@ class DataClass{
                 if(i >= element_validations.length)continue
                 // grab the validations next function
                 const validation  = element_validations[i]
+                // if before validation is available run it before validate the data
+                let validateInput = this.form_data[validateKeys[j]]
+               
+                if(this.before_validations[validateKeys[j]]){
+                    validateInput =  await this.before_validations[validateKeys[j]](validateInput)
+                }
                 // validate it
-                const outputPromise = validation(this.form_data[validateKeys[j]])
+                const outputPromise = validation(validateInput)
                 // Check weather our output is correct or not
                 if(!checkTheObjectPromiseOrNot(outputPromise))throw new NotReturnPromiseError("promised object must be returned");
                 // Get the promise data

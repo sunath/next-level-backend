@@ -1,6 +1,9 @@
 const {DataClass,DataClassFacotry} = require("../dataclasses/base")
-const {is_required, minLength} = require("../dataclasses/validators")
+const {is_required, minLength} = require("../dataclasses/validators");
+const { createPasswordHashing } = require("../utils/password_hashing");
 
+
+const {createPassword} = createPasswordHashing("d2nd2bhvdg2be2,, fmf 2fhvehv w ,3f3n,mf32dnm3ndm3  3 f")
 
 class UserDataClass extends DataClass {
     username = {
@@ -11,7 +14,8 @@ class UserDataClass extends DataClass {
     password = {
         type:String,
         validations:[],
-        unique:true
+        beforeValidation:createPassword,
+        unique:true,
     }
 
     age = {

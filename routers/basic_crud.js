@@ -150,15 +150,16 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
  */
 function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
-
-        let response = await classFactory.createObject(req.body).validate()
+        const newObject = classFactory.createObject(req.body)
+        let response = await newObject.validate()
         console.log(response , " this is the response")
         if(!response.data.okay){
             console.log("we return")
             return res.status(400).send(response)
         }
         try{
-            response = await classFactory.createModelObject(req.body)
+            const data = await newObject.transformValidateDataToBeSaved(req.body)
+            response = await classFactory.createModelObject(data)
             return res.status(200).send(response)
         }catch(error){
             return res.status(500).send({'error':"Internal server error"})
