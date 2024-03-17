@@ -247,18 +247,21 @@ class DataClassFacotry{
     dataClass;
     model;
     removeByDefaultFields = [];
-
+    // removeFields = []
 
     static models = {}
 
     // Mainly used to get the subclass
-    constructor(dataClass,metaData){
+    constructor(dataClass,metaData,removeFields){
         this.dataClass = dataClass;
         this.model = this.getModel()
         this.metaData = metaData;
-        this.removeByDefaultFields = []
+        this.removeByDefaultFields = new this.dataClass().getRemovableFields() || []
         console.log(this.model)
         this.getModelObjectById = this.getModelObjectById.bind(this)
+
+        console.log("remove fields are these",removeFields)
+
     }
    
     /**
@@ -286,6 +289,8 @@ class DataClassFacotry{
 
     }
 
+ 
+
     getModel(){
         const c  = new this.dataClass()
         if(!DataClassFacotry.models[c.getName()]){
@@ -297,8 +302,8 @@ class DataClassFacotry{
 
     // Create new class factory to the given class
     static createFactory(cls,removeFields=[]){
-        const c =  new DataClassFacotry(cls,removeFields);
-        c.removeByDefaultFields = removeFields
+        const c =  new DataClassFacotry(cls,null,removeFields);
+        // c.removeByDefaultFields = removeFields
         return c
     }
 
@@ -312,7 +317,10 @@ class DataClassFacotry{
      */
     getModelObjectById(id,removeColumns=null,onlyColumns=null){
         const o = new  this.dataClass()
-        return getModelObjectWithId(this.getModel(),id,onlyColumns || this.getModelFieldsExpect(removeColumns || o.getRemovableFields()))
+        console.log(this.removeByDefaultFields)
+        // return getModelObjectWithId(this.getModel(),id,onlyColumns || this.getModelFieldsExpect(removeColumns || o.getRemovableFields()))
+        // this.removeByDefaultFields = [ 'password']
+        return getModelObjectWithId(this.getModel(),id,this.getModelFieldsExpect(this.removeByDefaultFields))
     }
 
     setRemovableFields(f){
@@ -328,7 +336,7 @@ class DataClassFacotry{
      * @returns 
      */
     getModelObjectsWithAll(limit=10,skip=0){
-        return getAllModelsObjects(this.getModel(),limit,skip);
+        return getAllModelsObjects(this.getModel(),limit,skip,this.getModelFieldsExpect(this.removeByDefaultFields));
     }
 
     getModelWithPayload(query){
@@ -385,13 +393,25 @@ class DataClassFacotry{
             const modelFields = this.dataClass.getOwnPropertyNames(cls);
             this.fields = modelFields
         }
-        return this.fields;
+        return [...this.fields,'createdAt','updatedAt'];
     }
 
     // returns the field of the model expect the one you don't want
     getModelFieldsExpect(fields){
         const filteredFields = this.getModelFields().filter((e) => fields.indexOf(e) < 0)
         return filteredFields;
+    }
+
+
+    buildDataClassFromModel(fields,addUniqnessToo){
+        const object = new this.dataClass();
+        const newDataClass = new DataClass()
+        for(let i = 0; i < fields.length;i++){
+            Object.defineProperty(newDataClass,fields[i],{
+                get:() => object[fields[i]]});
+        }
+
+        return newDataClass;
     }
 
 

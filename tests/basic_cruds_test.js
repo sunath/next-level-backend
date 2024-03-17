@@ -37,9 +37,12 @@ class UserLogDataClass extends DataClass{
     }
 }
 
+UserDataClassFactory.setRemovableFields(['password'])
+
 const UserLoggedFactory = DataClassFacotry.createFactory(UserLogDataClass)
 
 const userRouter = Router()
+
 
 applyBasicCrud(userRouter,UserDataClass);
 app.use(express.json({strict:false}))
@@ -87,6 +90,8 @@ userRouter.get("/userSecret",securityTokenMiddleware,async function(req,res){
 
 app.get("",(req,res) => res.status(200).send("tes"))
 app.listen(8000,() => {
+    console.log(UserDataClassFactory.removeByDefaultFields)
+    UserDataClassFactory.setRemovableFields(['password'])
     console.log(UserDataClassFactory.removableFieldsbyDefault, " these are must be removed")
     console.log("I'm listening")
 })

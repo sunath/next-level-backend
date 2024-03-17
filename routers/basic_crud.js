@@ -85,7 +85,7 @@ function addGetById(router,factory){
                 const object = await factory.getModelObjectById(id,null)
                 return sendGetItemsResponse(res,object)
             }catch(error){
-
+                console.log(error)
                 // if the id do not exists
                 if(error instanceof ModelWithIdNotFound){
                     // send an 404 error
