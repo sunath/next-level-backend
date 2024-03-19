@@ -53,4 +53,33 @@ function createPasswordHashing(securityKey){
     return {createPassword:create,verifyPassword}
 }
 
-module.exports = {createPasswordHashing}
+
+/**
+ * takes a string and hash it with the password given to the high order function(createPasswordHashing)
+ * returns a string which is hashed by the argon3
+ * @param {String} plainPassword 
+ * @returns {String}
+ */
+async function hashPassword(plainPassword){
+    const newPassword = await argon2.hash(plainPassword)
+    return newPassword
+}
+
+/**
+ * verify the plain password and hashed password will match or not 
+ * password will be security key given by the user
+ * @param {String} hashedPassword 
+ * @param {String} plainPassword 
+ * @returns {Boolean}
+ */
+async function verifyHashedPassword(hashedPassword,plainPassword){
+try{
+    return (await argon2.verify(hashedPassword,plainPassword))
+}catch(error){
+    throw new InternalServerError("internal server error")
+}
+
+
+}
+
+module.exports = {createPasswordHashing,createPasswordHashing,hashPassword,verifyHashedPassword}
