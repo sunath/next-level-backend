@@ -17,6 +17,8 @@ const { addNotFoundMiddleware } = require("../middleware/notFoundMiddleware");
 const { modelDataValidationMiddleware } = require("../middleware/dataValidationMiddleware");
 const { runMiddlewares } = require("../middleware/runMiddlwares");
 const { removeFieldsAndReturnTheObject } = require("../utils/removeFieldsAndGetTheObject");
+const { UserBearerTokenHandler } = require("../middleware/userTokenMiddleware");
+const { quickCheckOfRequiredFields } = require("../utils/quickCheckOfRequiredFields");
 
 // mongoose.connect("mongodb+srv://next-level-backend:jAe5v6ASvlCsqUwg@cluster0.tc7v1.mongodb.net/next-level-backend?retryWrites=true&w=majority")
 mongoose.connect("mongodb://localhost:27017")
@@ -86,6 +88,35 @@ userRouter.post("/accesstoken",async function (req,res)  {
 userRouter.get("/userSecret",securityTokenMiddleware,async function(req,res){
     const user = await getModelObjectWithId(UserDataClassFactory.getModel(),req.verifyDetails._id)
     return res.status(200).send(user)
+})
+
+
+const userBearerTokenHandler = new UserBearerTokenHandler(UserDataClassFactory,"username","password","hejhf3h3hhh3rhg3gr3gr3gr3g3r3",true,60*60);
+
+userRouter.post("/createNewToken",async function(req,res){
+    try{
+        const response =  await userBearerTokenHandler.checkUserExist(req)
+        if(!response.okay){
+            return res.status(400).send(response)
+        }
+       const token = await userBearerTokenHandler.createUserToken(removeFieldsAndReturnTheObject(response.user,["password"]))
+       return res.status(200).send(token)
+    }catch(error){
+        console.log(error)
+        return res.status(400).send(error.message)
+    }
+       
+})
+
+
+userRouter.get("/verifyNewToken",userBearerTokenHandler.decodeUserToken(),async function(req,res){
+    try{
+            return res.status(200).send(req.verifyDetails)
+    }catch(error){
+        return res.status(200).send(error.message)
+    }
+
+
 })
 
 app.get("",(req,res) => res.status(200).send("tes"))

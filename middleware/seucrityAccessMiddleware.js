@@ -89,7 +89,10 @@ function createSecurityAccessMiddleware(secret,securityAccessTokenValidation=(da
         }
 
         // call next function
-        next()
+        if(next){
+            next()
+        }
+        
     }
 
 
@@ -98,4 +101,35 @@ function createSecurityAccessMiddleware(secret,securityAccessTokenValidation=(da
 }
 
 
-module.exports = {createSecurityAccessMiddleware,CreateSecurityAccessTokenError}
+
+
+class SecurityAccessMiddleware{
+
+
+    constructor(secret,securityAccessTokenValidation=(data) => null,payloadDecodeValidation=(data) => null){
+       const [create,decode] =  createSecurityAccessMiddleware(secret,securityAccessTokenValidation,payloadDecodeValidation)
+        this.create = create
+        this.decode = decode
+    }
+
+    // token are created through this function
+    // expire seconds can be changed
+    /**
+     * create the security token according to the data provided
+     * secret will be the secret user pass to the high order function
+     * when the token will expire must be define in seconds
+     * @param {Object} data 
+     * @param {Number} tokenexpiresInSecond 
+     * @returns {String}
+     */
+    createToken(data,tokenexpiresInSecond){
+        return this.create(data,tokenexpiresInSecond)
+    }
+
+    decodeToken(token){
+        return this.decode(token)
+    }
+
+}
+
+module.exports = {createSecurityAccessMiddleware,CreateSecurityAccessTokenError,SecurityAccessMiddleware}

@@ -87,6 +87,7 @@ class DataClass{
         const keys = Object.keys(this.before_validations)
         const obj = Object.assign({},validatedData)
         for(let i = 0 ; i < keys.length;i++){
+
             obj[keys[i]] = await this.before_validations[keys[i]](validatedData[keys[i]])
         }
     return obj
@@ -346,7 +347,7 @@ class DataClassFacotry{
         console.log(this.removeByDefaultFields)
         // return getModelObjectWithId(this.getModel(),id,onlyColumns || this.getModelFieldsExpect(removeColumns || o.getRemovableFields()))
         // this.removeByDefaultFields = [ 'password']
-        return getModelObjectWithId(this.getModel(),id,this.getModelFieldsExpect(this.removeByDefaultFields))
+        return getModelObjectWithId(this.getModel(),id,this.getModelFieldsExpect(removeColumns || this.removeByDefaultFields))
     }
 
     setRemovableFields(f){
@@ -389,24 +390,31 @@ class DataClassFacotry{
      * @returns {Promise<void>}
      */
     async updateModelObject(query,payload){
-
-        // get the model with the payload
-        const model = await this.getModelWithPayload(query)
-        // create an empty object of the dataclass
-        const dataClass1 = new this.dataClass()
-        dataClass1.model = this.model
-        // init with model data
-        dataClass1.init(model)
-        // validate the payload data
-        const response = await dataClass1.validateOnlyPayload(payload)
-        // if no error occur update the model
-        if(response.data.okay){
-            // update the model with the id
-            await updateTheModelWithTheId(model._id,this.getModel(),this,payload)
-        }else{
-            // throw an error with the error given by the
-            return response
+        try{
+            // get the model with the payload
+            const model = await this.getModelWithPayload(query)
+            // create an empty object of the dataclass
+            const dataClass1 = new this.dataClass()
+            dataClass1.model = this.model
+            // init with model data
+            dataClass1.init(model)
+            // validate the payload data
+            const response = await dataClass1.validateOnlyPayload(payload)
+            // transform data before saving
+            const transformedData = await dataClass1.transformValidateDataToBeSaved(payload)
+            // if no error occur update the model
+            if(response.data.okay){
+                // update the model with the id
+                await updateTheModelWithTheId(model._id,this.getModel(),this,transformedData)
+            }else{
+                console.log(response)
+                // throw an error with the error given by the
+                return response
+            }
+        }catch(error){
+            throw error
         }
+      
     }
 
     // fields of the model
