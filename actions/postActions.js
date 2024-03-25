@@ -11,16 +11,13 @@ const {Error} = require("mongoose")
  */
 async function addNewObjectToCollection(model,validatedData){
     try{
-        console.log(model, " this is the model")
         // create the object
         const modelObject = model(validatedData)
         // wait until it saved
         const response = await modelObject.save()
         return response;
     }catch(error){
-        // raise an error if the error ouccred
-        console.log(error)
-        return error;
+        throw error
     }
     
 }

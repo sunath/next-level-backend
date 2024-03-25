@@ -8,7 +8,7 @@ const { ERROR_CODES } = require("../routers/basic_crud");
  * @returns {Response}
  */
 function sendInternalServerError(res){
-    return res.status(500).send({'error':"Internal Server error",'errorId':3})
+    return res.status(500).send({'error':"Internal Server error occured.Please try again later.",'errorId':3})
 }
 
 
@@ -37,4 +37,21 @@ function sendErrorWithValidationErrorResponse(res,validationResponse){
     res.status(400).send({'error':validationResponse.data.error,'field':validationResponse.field})
 }
 
-module.exports = {sendInternalServerError,sendGetItemsResponse,sendErrorWithValidationErrorResponse}
+
+/**
+ * A shortcut function to send 404 error message
+ * @param {Express.Response} res 
+ */
+function sendObjectWithQueryNotFoundErrorResponse(res,message=null){
+    res.status(404).send({'error':message || "Object with that specification not found.Please check your inputs."})
+}
+
+/**
+ * return a bad request response with 400 error message
+ * @param {Express.Response} res 
+ * @param {String} message 
+ */
+function sendBadRequest(res,message="The data given is invalid."){
+    res.status(400).send(message)
+}
+module.exports = {sendInternalServerError,sendObjectWithQueryNotFoundErrorResponse,sendBadRequest,sendGetItemsResponse,sendErrorWithValidationErrorResponse}

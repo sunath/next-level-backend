@@ -1,9 +1,10 @@
 const { Model, deleteModel } = require("mongoose");
 const { DataClass, DataClassFacotry } = require("../dataclasses/base");
 const {Router} = require("express");
-const { sendInternalServerError, sendGetItemsResponse } = require("../utils/basic_returns");
-const { ModelWithIdNotFound, MongooseInvalidId } = require("../actions");
+const { sendInternalServerError, sendGetItemsResponse, sendErrorWithValidationErrorResponse, sendBadRequest, sendObjectWithQueryNotFoundErrorResponse } = require("../utils/basic_returns");
+const { ModelWithIdNotFound, MongooseInvalidId, ModelWithQueryNotFound } = require("../actions");
 const { deleteObjectFromCollection } = require("../actions/deleteActions");
+const { removeFieldsAndReturnTheObject } = require("../utils/removeFieldsAndGetTheObject");
 
 
 
@@ -81,7 +82,7 @@ function addGetById(router,factory){
         if(!id){
             // if the id is not given the response as a bad request
             // set the error as id must be defined
-            return res.status(400).send({'error':"Id must be defined",errorId:ERROR_CODES.ID_NOT_FOUND})
+            return sendBadRequest({'error':"Id must be defined",errorId:ERROR_CODES.ID_NOT_FOUND})
         }else{
 
             try{
@@ -90,16 +91,17 @@ function addGetById(router,factory){
                 return sendGetItemsResponse(res,object)
             }catch(error){
                 if(error instanceof MongooseInvalidId){
-                    return res.status(400).send("id is invalid")
+                    return sendBadRequest("The given id is wrong.")
                 }
                 // if the id do not exists
                 if(error instanceof ModelWithIdNotFound){
                     // send an 404 error
-                    return res.status(404).send({error:"invalid id",errorID:ERROR_CODES.ID_IS_INVALID}) 
+                    return res.status(404).send({error:"Object with that Id does not exist",errorID:ERROR_CODES.ID_IS_INVALID}) 
                 }else{
                     // in case of database connection failed
                     // or any other error ouccured
-                    return res.status(500).send({error:"Internal server error",errorId:ERROR_CODES.INTERNAL_SERVER_ERROR})
+                    // return res.status(500).send({error:"Internal server error",errorId:ERROR_CODES.INTERNAL_SERVER_ERROR})
+                    return sendInternalServerError(res)
                 }
             }
         }
@@ -150,19 +152,25 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
  */
 function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
+        // create a new empty object object and set the data according to the request body
         const newObject = classFactory.createObject(req.body)
+        // validate the data
         let response = await newObject.validate()
-        console.log(response , " this is the response")
+        // if an error happens
         if(!response.data.okay){
-            console.log("we return")
-            return res.status(400).send(response)
+            // only send the error in the field and the field name
+            return sendErrorWithValidationErrorResponse(res,response)
         }
         try{
+            // get the data should be saved to the database
+            // if the dataclass have beforeValidation functions they will change the details 
             const data = await newObject.transformValidateDataToBeSaved(req.body)
+            // await until we create the user
             response = await classFactory.createModelObject(data)
-            return res.status(200).send(response)
+            // remove the fields that should remove by default and send the object
+            return res.status(200).send(removeFieldsAndReturnTheObject(response['_doc'],newObject.getRemovableFields()))
         }catch(error){
-            return res.status(500).send({'error':"Internal server error"})
+            return sendInternalServerError(res)
         }
        
     })
@@ -177,10 +185,12 @@ function addModelPost(router,classFactory){
 function addModelPut(router,classFactory,changes){
     router.put("/",async function(req,res){
        try{
+        // update the model if we can
            const data = await classFactory.updateModelObject(req.body.query,req.body.payload)
            return res.status(200).send(data)
        }catch (error){
         console.log(error)
+           if(error instanceof ModelWithQueryNotFound) return sendObjectWithQueryNotFoundErrorResponse(res)
            return sendInternalServerError(res)
        }
 
@@ -201,15 +211,18 @@ function addModelDelete(router,classFactory){
     router.delete("/",async function(req,res){
 
         try{
+            // grab the id if exists
             const id = req.query['id']
-            console.log(id)
             if(!id){
-                return res.status(400).send("id must be defined")
+                // throw an error if not
+                return sendBadRequest("id must be defined")
             }
+            // wait till the object is being deleted
             const response = await deleteObjectFromCollection(classFactory.getModel(),id)
+            // if no error ouccred send an empty response
             return res.status(204).send("")
         }catch(error){
-            console.log(error)
+            // return the message of the error
             return res.status(400).send(error.message)
         }
       

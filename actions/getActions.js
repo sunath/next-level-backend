@@ -55,11 +55,11 @@ async function getModelObjectWithId(model,id,columns=null){
 async function getModelObjectWithPayload(model,query){
     try{
         const object = await model.findOne(query)
-        if(!object)throw new ModelWithQueryNotFound("A model containing that data wasn't found")
+        if(!object)throw new ModelWithQueryNotFound()
         return object
     }catch(error){
         if(error instanceof ModelWithQueryNotFound)throw error;
-        throw new InternalServerError("internal server error happened")
+        throw new InternalServerError()
     }
 }
 
@@ -73,7 +73,13 @@ async function getModelObjectWithPayload(model,query){
  * @returns {Promise<Mongoose.Model>}
  */
 async function getAllModelsObjects(model,limit,skip,columns=null){
+    try{
         const models = await model.find({},columns).limit(limit).skip(skip)
+        if(!models)throw new ModelWithQueryNotFound()
         return models
+    }catch(error){
+        throw error instanceof ModelWithQueryNotFound ? error : new InternalServerError()
+    }
+        
 }
 module.exports = {getModelObjectWithId,getModelObjectWithPayload,getAllModelsObjects}
