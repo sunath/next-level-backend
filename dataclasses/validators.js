@@ -58,10 +58,32 @@ function maxLength(length,errorMsg){
  */
 function typeChecking(type,field){
     return functionToPromise((resolve,reject,value) => {
-        console.log(typeof(value) , type.name.toLowerCase())
+        // console.log(typeof(value) , type.name.toLowerCase())
+        // Only when the type is Date
+        if(type.name.toLowerCase() == "date"){
+            dateTypeChecking(type,field,value,resolve)
+        }
         if(typeof(value) == type.name.toLowerCase())resolve({okay:true})
         resolve({okay:false,error:`${field} must be a ${type.name}`})
     })
+}
+
+/**
+ * a function to use in special occasion.
+ * date type checking is something different than normal type checking
+ * Since we recive dates in String we have to convert them into Date
+ * then check weather that day is valid or not
+ * that's what this function does
+ * @param {Type} type 
+ * @param {String} field 
+ */
+function dateTypeChecking(type,field,value,resolve,reject){
+    const response = Date.parse(value)
+    if(!response){
+        resolve({okay:false,error:`${field} must be a date`})
+    }
+
+    resolve({okay:true})
 }
 
 

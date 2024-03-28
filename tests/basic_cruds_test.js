@@ -39,16 +39,38 @@ class UserLogDataClass extends DataClass{
     }
 }
 
+
+class MovieDataClass extends DataClass{
+
+    getName(){
+        return "movies"
+    }
+
+    releaseDate = {
+        type:Date
+    }
+
+    name = {
+        type:String
+    }
+
+
+}
+
+
 UserDataClassFactory.setRemovableFields(['password'])
 
 const UserLoggedFactory = DataClassFacotry.createFactory(UserLogDataClass)
+const MovieFactory = DataClassFacotry.createFactory(MovieDataClass)
 
 const userRouter = Router()
-
+const movieRouter = Router()
 
 applyBasicCrud(userRouter,UserDataClass);
+applyBasicCrud(movieRouter,MovieDataClass)
 app.use(express.json({strict:false}))
 app.use("/user",userRouter)
+app.use("/movie",movieRouter)
 
 const [createSecurityToken,securityTokenMiddleware]= createSecurityAccessMiddleware("fhejhfwjfbehfevgfenenwn3be3br b3  r3 rb3  r3 ")
 console.log(createSecurityToken,securityTokenMiddleware)
