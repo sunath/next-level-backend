@@ -22,7 +22,6 @@ const { UserBearerTokenHandler } = require("../middleware/userTokenMiddleware");
 const { quickCheckOfRequiredFields } = require("../utils/quickCheckOfRequiredFields");
 const { createMongoDBField } = require("../utils/createFields");
 
-// mongoose.connect("mongodb+srv://next-level-backend:jAe5v6ASvlCsqUwg@cluster0.tc7v1.mongodb.net/next-level-backend?retryWrites=true&w=majority")
 mongoose.connect("mongodb://localhost:27017")
 
 class UserLogDataClass extends DataClass{
