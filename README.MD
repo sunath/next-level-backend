@@ -1,17 +1,33 @@
-#Next Level Backend
+# Next Level Backend
 
 ## Quick Start Guide
 
 ### Preparing The Envrionment
-    ``` 
-    mkdir helloworld
 
-    cd ./helloworld
+```bash
+mkdir HelloWorld
+cd ./HelloWorld
+npm install next-leve-backend
+```
 
-    npm install next-level-backend
-    
-    ```
+Next open the the HelloWolrd folder using Visual Studio Code or the code editor you use.
 
-That's it.Now you have installed the next level backend.So let's open the folder in the visual studio code and get ready write our server 
+### Get up and Running
 
+1. Create a file called  ` main.js `
+
+	Since next level backend is integrated using express js. We will use the same base as the express.
 	
+    ```javascript
+    // import the express libary and init  the app instance 
+    const express = require("express");
+    const app  = express();
+    ```
+	 Then let's define the port and write the code to start the server
+	 
+	 ```javascript 
+    app.listen(() => {
+    console.log("App is live.It's running on port 8000")
+    },8000)
+	 ```
+	 `
