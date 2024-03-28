@@ -3,7 +3,8 @@
 ## Quick Start Guide
 
 ### Preparing The Envrionment
-    ```mkdir helloworld
+    ``` 
+    mkdir helloworld
 
     cd ./helloworld
 
