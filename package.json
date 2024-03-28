@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test-cruds": "nodemon tests/basic_cruds_test.js"
+    "test-cruds": "nodemon tests/basic_cruds_test.js --trace-warnings"
   },
   "author": "",
   "license": "ISC",

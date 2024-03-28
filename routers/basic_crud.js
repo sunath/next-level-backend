@@ -7,12 +7,12 @@ const { deleteObjectFromCollection } = require("../actions/deleteActions");
 const { removeFieldsAndReturnTheObject } = require("../utils/removeFieldsAndGetTheObject");
 
 
-
 const ERROR_CODES = {
     ID_NOT_FOUND : 1,
     ID_IS_INVALID: 2,
     INTERNAL_SERVER_ERROR:3
 }
+
 
 /**
  * Takes a router and a data class
@@ -154,8 +154,10 @@ function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
         // create a new empty object object and set the data according to the request body
         const newObject = classFactory.createObject(req.body)
+        // console.log(newObject, " object intialized")
         // validate the data
         let response = await newObject.validate()
+        // console.log("got the response ",response)
         // if an error happens
         if(!response.data.okay){
             // only send the error in the field and the field name
@@ -170,6 +172,7 @@ function addModelPost(router,classFactory){
             // remove the fields that should remove by default and send the object
             return res.status(200).send(removeFieldsAndReturnTheObject(response['_doc'],newObject.getRemovableFields()))
         }catch(error){
+            // console.log(error)
             return sendInternalServerError(res)
         }
        
@@ -189,7 +192,7 @@ function addModelPut(router,classFactory,changes){
            const data = await classFactory.updateModelObject(req.body.query,req.body.payload)
            return res.status(200).send(data)
        }catch (error){
-        console.log(error)
+        // console.log(error)
            if(error instanceof ModelWithQueryNotFound) return sendObjectWithQueryNotFoundErrorResponse(res)
            return sendInternalServerError(res)
        }
@@ -231,4 +234,4 @@ function addModelDelete(router,classFactory){
 }
 
 
-module.exports = {applyBasicCrud,ERROR_CODES,addGetById,addModelPost,addModelPut}
+module.exports = {applyBasicCrud,addGetById,addModelPost,addModelPut}

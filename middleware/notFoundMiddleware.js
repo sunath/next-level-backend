@@ -19,7 +19,7 @@ function addNotFoundMiddleware(model,bodyFilter,statusCode,errorMSG) {
              req.headers.modelObject = response
              return null;
         }catch(error){
-            console.log(error)
+            // console.log(error)
             if(error instanceof InternalServerError){
                 return res.status(500).send("internal server error")
             }else if(error instanceof ModelWithQueryNotFound){

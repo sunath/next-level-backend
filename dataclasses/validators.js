@@ -108,14 +108,14 @@ function unqiueValidator(field,model){
    
         model.findOne({[field]:value}).then(e => {
 
-            console.log({[field]:value})
-            console.log(field,model,e)
+            // console.log({[field]:value})
+            // console.log(field,model,e)
             if(e){
                 resolve({error:field+" is already used. try a different one",okay:false})
             }
             resolve({okay:true})
         }).catch(error => {
-            console.log("erro happned")
+            // console.log("erro happned")
         })
     }
 

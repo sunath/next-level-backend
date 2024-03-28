@@ -33,7 +33,7 @@ class DataClass{
      * @returns 
      */
     static getOwnPropertyNames(thisObj){
-        return Object.keys(thisObj).filter(e => (e != "validations" && e != "form_data" && e != "model"))
+        return Object.keys(thisObj).filter(e => (e != "validations" && e != "form_data" && e != "model" && e !="before_validations" && e != "after_validations"))
     }
     
     /**
@@ -46,7 +46,10 @@ class DataClass{
         const properties = DataClass.getOwnPropertyNames(this);
         // Initialize the validations into an empty list
        let validations = {}
+       // functions that should run before the running the validtions    
        let beforeValidationsFunctions = {}
+        //  functions that should run after validation and before validations   
+       let afterValidationsFunctions = {}
         // Iterate through all the properties 
         iterateList(properties,(property) => {
             // Set the validations of the property into a new dictionary
@@ -57,12 +60,17 @@ class DataClass{
 
             // add the unique validator if the we have the unique in the property attributes
             if(this[property]['unique']){
-                console.log(property,this.model)
+                // console.log(property,this.model)
                 validations[property].push(unqiueValidator(property,this.model))
             }
-            console.log(this[property])
+            // collect the beforeValidations
+            // console.log(this[property])
             if(this[property]['beforeValidation']){                
                 beforeValidationsFunctions[property] = this[property]['beforeValidation']
+            }
+            // collect the afterValidation
+            if(this[property]['afterValidation']){
+                afterValidationsFunctions[property] = this[property]['afterValidation']
             }
         })
 
@@ -72,23 +80,33 @@ class DataClass{
             get:() => validations
         })
 
+        // set the before_validations functions in the object
         Object.defineProperty(this,'before_validations',{
             get:() => beforeValidationsFunctions
         })
 
-        console.log("before validation functions ",beforeValidationsFunctions)
+        // set the after_validations functions in the object
+        Object.defineProperty(this,"after_validations",{
+            get:() => afterValidationsFunctions
+        })
 
+        // console.log("before validation functions ",beforeValidationsFunctions)
+
+        // define the form data in the object
         Object.defineProperty(this,'form_data',{
             get:() => data
         })
+
+
     }
 
     async transformValidateDataToBeSaved(validatedData){
-        const keys = Object.keys(this.before_validations)
+        // console.log(this.after_validations, " validations ")
+        const keys = Object.keys(this.after_validations)
         const obj = Object.assign({},validatedData)
         for(let i = 0 ; i < keys.length;i++){
 
-            obj[keys[i]] = await this.before_validations[keys[i]](validatedData[keys[i]])
+            obj[keys[i]] = await this.after_validations[keys[i]](validatedData[keys[i]])
         }
     return obj
     }
@@ -284,10 +302,10 @@ class DataClassFacotry{
         this.model = this.getModel()
         this.metaData = metaData;
         this.removeByDefaultFields = new this.dataClass().getRemovableFields() || []
-        console.log(this.model)
+        // console.log(this.model)
         this.getModelObjectById = this.getModelObjectById.bind(this)
 
-        console.log("remove fields are these",removeFields)
+        // console.log("remove fields are these",removeFields)
 
     }
    
@@ -344,7 +362,7 @@ class DataClassFacotry{
      */
     getModelObjectById(id,removeColumns=null,onlyColumns=null){
         const o = new  this.dataClass()
-        console.log(this.removeByDefaultFields)
+        // console.log(this.removeByDefaultFields)
         // return getModelObjectWithId(this.getModel(),id,onlyColumns || this.getModelFieldsExpect(removeColumns || o.getRemovableFields()))
         // this.removeByDefaultFields = [ 'password']
         return getModelObjectWithId(this.getModel(),id,this.getModelFieldsExpect(removeColumns || this.removeByDefaultFields))
@@ -407,7 +425,7 @@ class DataClassFacotry{
                 // update the model with the id
                 await updateTheModelWithTheId(model._id,this.getModel(),this,transformedData)
             }else{
-                console.log(response)
+                // console.log(response)
                 // throw an error with the error given by the
                 return response
             }

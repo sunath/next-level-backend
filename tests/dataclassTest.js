@@ -14,7 +14,8 @@ class UserDataClass extends DataClass {
     password = {
         type:String,
         validations:[],
-        beforeValidation:createPassword,
+        beforeValidation:null,
+        afterValidation:createPassword,
         unique:true,
     }
 

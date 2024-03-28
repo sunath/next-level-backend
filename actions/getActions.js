@@ -30,7 +30,7 @@ async function getModelObjectWithId(model,id,columns=null){
     
         // console.log(new ObjectId(id))
         const isValid = isValidObjectId(id)
-        console.log(isValid)
+        // console.log(isValid)
         if(!isValid){
             throw new MongooseInvalidId("id is invalid.please input a correct id")
         }

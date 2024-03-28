@@ -13,8 +13,8 @@ class DataClassSubFacotry extends DataClassFacotry{
     createObject(){
         // const newInstance = Object.create(this.dataClass)
         const  instance = Object.assign({},this.dataClass)
-        console.log(instance)
-        console.log(this.dataClass)
+        // console.log(instance)
+        // console.log(this.dataClass)
         // console.log(instance.username == this.dataClass.username)
         // Object.defineProperty(instance,"username","my nigga")
         Object.defineProperty(instance,"username",{

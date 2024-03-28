@@ -6,7 +6,7 @@ async function deleteObjectFromCollection(model,id){
 
         const modelExist = await getModelObjectWithId(model,id)
         const response = await model.deleteOne({_id:id})
-        console.log(response)
+        // console.log(response)
     }catch(error){
         throw error;
     }

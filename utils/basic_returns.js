@@ -1,5 +1,9 @@
-const { ERROR_CODES } = require("../routers/basic_crud");
-
+// const { ERROR_CODES } = require("../routers/basic_crud");
+const ERROR_CODES = {
+    ID_NOT_FOUND : 1,
+    ID_IS_INVALID: 2,
+    INTERNAL_SERVER_ERROR:3
+}
 /**
  * send an internal server error response to the user
  * 
