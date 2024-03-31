@@ -171,4 +171,64 @@ Next open the the HelloWolrd folder using Visual Studio Code or the code editor 
 
     when we send requests we will use the date `Date()` output just for now.
     So open the postman create a new post request.First let's test it with no data
-    ![screenshot]()
+    ![Postman request with no data](https://i.ibb.co/HNf7zhf/postman-movie-post-no-data.png "postman no data")
+
+    send the request.you will see an organized error.
+
+    ![Postman response with no data](https://i.ibb.co/NnxX3Vy/postman-movie-post-no-data-response.png "postman no data response")
+
+    As you can say it says that name must be a string.That's because of auto type checking.
+    When we said in our model Movie has an attribute called name, fast express backend knows that name 
+    must be a string and if any other type were to given it will throw an error to the user.
+
+    ```javascript
+    name = createMongoDBField(String,true,[validators.is_required("Name is required")])
+    ```
+
+    Now let's pass the name but not the date.Let's see what happen when we try to do it.
+    ![Postman response with only name](https://i.ibb.co/N7SJnpf/postman-movie-post-only-name.png "postman post request with only name given")
+
+
+    As you can see it says that date must be a Date.
+    So what's the point here.When you want to save data you don't have to worry about the validation
+    it will be done by the libary.Just give us what the data looks like we will handle everything.
+
+
+    Now enough with testing.let's create a save our first instance in the database.we will get the date from the javascript Date() function output.because it's a valid date.
+
+    ![Postman save object](https://i.ibb.co/wJH7dZY/postman-movie-save-post-request.png "postman post request save data")
+
+
+    as you can see it returns an object with id,created_at and ...
+    So it means your model has been saved.
+
+    `Note: if you send the same request without changing data you will get an error`
+    ![Postman unique check](https://i.ibb.co/GV4cNMJ/postman-movie-name-uniquness-check.png "postman unique check")
+
+    If we recall when we created the name field
+
+    ```javascript
+    name = createMongoDBField(String,true,[validators.is_required("Name is required")])
+    ```
+    we pass the second argument to be true.
+    it makes the name field unique.
+
+    try the same request with different name you can save a new object then.
+
+
+    See that's the power of fast express backend.It will use express and it's own features to make things
+    more dynamic and make sure it's safe.
+
+
+    Take a 5 minute break if you want.😜😜😜😜
+
+    So we saved data.But how we retrive them.That won't take so much time.
+    Just create a another request called `GetMovies` and just like below send the requets
+
+    ![Postman get all saved movies](https://i.ibb.co/9sKK4P9/postman-get-all-movies.png "saved movie response")
+
+    As you can see , you get all the models you saved via create movie request.
+    How easy is that, only thing we did was create a data class and create a mini router.
+    We will explain these in another sections for now keep in mind dataclass is a class which represent the mongo db model. 
+
+
