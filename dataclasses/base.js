@@ -180,7 +180,7 @@ class DataClass{
         const validateFields = Object.keys(payload)
 
         function getTheLengthOfValidateField(field){
-            return this.validations[field] ? this.validations[field].length : 0
+            return this.validations[field] ? this.validations[field].length : 1
         }
         // get the maximum loops we have to run 
         const maximumNumber = linearFindMaxNumber(validateFields,getTheLengthOfValidateField.bind(this));

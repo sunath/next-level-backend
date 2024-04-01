@@ -240,5 +240,65 @@ Next open the the HelloWolrd folder using Visual Studio Code or the code editor 
 
     for example let's change a date of a movie
 
+    first of all copy an id of a object which we saved.
+    then create new postman get request called `GetMovieWithId`
+    add a query parameter called `id` and set it to the id you copied
+    you should get a result like this
+
+    ![Postman request to get object with id](https://i.ibb.co/ydXZL7t/postman-get-movie-with-id.png "postman get object with id request")
+
+
+    So let's change it.
+    Now create a new request called `UpdateMovie` make sure it's type to be put.
+    In order to update a model you need to pass two arguments
+
+    1. query -  base on this data we will find your object
+    Usually it's look like this.
     
+
+        ```
+        "query":{_id:"some random object id"}
+        ```
+
+    2. payload - the data you want to replace
+
+        ```
+        "payload":{date:"new date"}
+        ```
+
+    3. So whole object looks like this
+
+        ```
+        {
+            "query":{
+                "_id":"some random id"
+            },
+            "payload":{
+                "date":"some new date"
+            }
+        }
+        ```
+
+    now let's send the request see what will happen.
+    ![Postman update request](https://i.ibb.co/QrWXJYw/postman-movie-update-request.png "Postman update movie request")
+
+    it returns nothing.But if you look at the status code it's around 200-203 that means it been saved. for now fast express does not use the general status codes , but soon it will be changed.
+
+
+    you can check by running the same get movie by id request to verify the updated version of movie.
+
+
+    Last but not least, let's wrap up this by deleating an object.
+    So let's create another request called delete movie by id.
+    pass the id as a query parameter.
+    note for delete you should name id as `id` not `_id`
+
+    ![Postman delete object with id](https://i.ibb.co/cb5XLKb/postman-movie-delete-request.png "delete object with an id")
+
+    you should not get any content for this either.
+    but it must return 204 status content. 
+    which is default for delete response.
+
+
+    And that's it for the introduction.Let's dive into each sections later.So let's move on to learn what happens behind the scenes.    
 
