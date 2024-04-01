@@ -169,6 +169,7 @@ Next open the the HelloWolrd folder using Visual Studio Code or the code editor 
     ```
 6. That's it . Now you have successfully created an app that can get,save,update,and delete movies.Let's test it with postman or whatever rest api tester app you like
 
+    <!-- create model -->
     when we send requests we will use the date `Date()` output just for now.
     So open the postman create a new post request.First let's test it with no data
     ![Postman request with no data](https://i.ibb.co/HNf7zhf/postman-movie-post-no-data.png "postman no data")
@@ -219,6 +220,7 @@ Next open the the HelloWolrd folder using Visual Studio Code or the code editor 
     See that's the power of fast express backend.It will use express and it's own features to make things
     more dynamic and make sure it's safe.
 
+    <!-- get model -->
 
     Take a 5 minute break if you want.😜😜😜😜
 
@@ -231,4 +233,12 @@ Next open the the HelloWolrd folder using Visual Studio Code or the code editor 
     How easy is that, only thing we did was create a data class and create a mini router.
     We will explain these in another sections for now keep in mind dataclass is a class which represent the mongo db model. 
 
+
+    <!-- update model -->
+    All right now let's see how we can update a model.This requires two things.
+    id of the object and payload you want to change
+
+    for example let's change a date of a movie
+
+    
 

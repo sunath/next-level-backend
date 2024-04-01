@@ -175,12 +175,12 @@ class DataClass{
      * @returns {Object || Null} return an Object which contains error data or null if there's no errors
      */
     async validateOnlyPayload(payload){
-
+      
         // get the fields that has to be validated
         const validateFields = Object.keys(payload)
 
         function getTheLengthOfValidateField(field){
-            return this.validations[field].length
+            return this.validations[field] ? this.validations[field].length : 0
         }
         // get the maximum loops we have to run 
         const maximumNumber = linearFindMaxNumber(validateFields,getTheLengthOfValidateField.bind(this));
@@ -409,6 +409,7 @@ class DataClassFacotry{
      */
     async updateModelObject(query,payload){
         try{
+            console.log(query,payload)
             // get the model with the payload
             const model = await this.getModelWithPayload(query)
             // create an empty object of the dataclass
@@ -430,6 +431,7 @@ class DataClassFacotry{
                 return response
             }
         }catch(error){
+            console.log(error)
             throw error
         }
       

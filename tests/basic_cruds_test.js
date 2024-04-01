@@ -58,6 +58,7 @@ const MovieFactory = DataClassFacotry.createFactory(MovieDataClass)
 const userRouter = Router()
 const movieRouter = Router()
 
+
 applyBasicCrud(userRouter,UserDataClass);
 applyBasicCrud(movieRouter,MovieDataClass)
 app.use(express.json({strict:false}))
