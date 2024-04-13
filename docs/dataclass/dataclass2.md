@@ -200,7 +200,7 @@ so in the runner function we are gonna change some lines.
 
 ```javascript
 const {DataClass} = require("fast-express-backend")
-const {DataClassFacotry} = require("fast-express-backend")
+const {DataClassFactory} = require("fast-express-backend")
 const mongoose = require("mongoose")
 const {createMongoDBField} = require('fast-express-backend/utils')
 const {validators} = require('fast-express-backend/dataclasses/')
@@ -228,7 +228,7 @@ user.init({email:"jhonDoe@gmail.com",firstName:"jhon",lastName:"doe",password:"T
 
 async function runnner(){
     await mongoose.connect("mongodb://localhost:27017/tests")
-    const GoogleUserClassFactory = DataClassFacotry.createFactory(GoogleUser)
+    const GoogleUserClassFactory = DataClassFactory.createFactory(GoogleUser)
     
     const data = {
         email:"jhonDoe@gmail.com",
@@ -258,7 +258,7 @@ As it's in the above we have make changes in the runner function.
 ```javascript
 async function runnner(){
     await mongoose.connect("mongodb://localhost:27017/tests")
-    const GoogleUserClassFactory = DataClassFacotry.createFactory(GoogleUser)
+    const GoogleUserClassFactory = DataClassFactory.createFactory(GoogleUser)
     
     const data = {
         email:"jhonDoe@gmail.com",
@@ -278,24 +278,24 @@ async function runnner(){
 
 }
 ```
-1. We wait till the mongoose dataconnection is established.
-2. Then we create a data class fatory - a class which has generic methods such as save data, get data, delete data from the database 
+1. We wait till the mongoose data connection is established.
+2. Then we create a data class factory - a class which has generic methods such as save data, get data, delete data from the database 
 But it only have the power to delete the data of the class given.That means `GoogleUserClassFactory` only can save ,get the `GoogleUser`
-data.If you remeber we override the data class getName function.The name we used will be model name.
+data.If you remember we override the data class getName function.The name we used will be model name.
 3. Create a new `GoogleUser` object from data. It will automatically call the constructor and also the init function.
 4. Validate the new object `googleUserDataClassObject`
 5. if the response is good , which means no errors, we save data using DataClassFactory method called `createModelObject`
-6. That's it now you can change data or send the same data twice to see wether email uniquness works.
+6. That's it now you can change data or send the same data twice to see wether email uniqueness works.
 
 These objects are saved in the mongodb.you call look up them.Soon we will teach you how to get in code too.for now use third party app to view the mongodb databases.
 
 As you can see when it runs first time it runs without any output.This means it creates no error.But as soon as you run it twice without changing data you get a error a called something like `email is not unique` or `email is already used`
 
-![Email uniqueness test](https://i.ibb.co/4VDb2c8/dataclass-test-1-2-1.png "email uniquness test")
+![Email uniqueness test](https://i.ibb.co/4VDb2c8/dataclass-test-1-2-1.png "email uniqueness test")
 
 
 That's it.You don't have check manually weather it's unique or not.Data class will tell you.You just
-1. Create the facotry
+1. Create the factory
 2. Create a new object using factory
 3. validate the new object
 4. if the data is okay save them using dataclass factory `createModelObject` method.

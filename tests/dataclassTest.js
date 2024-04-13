@@ -1,4 +1,4 @@
-const {DataClass,DataClassFacotry} = require("../dataclasses/base")
+const {DataClass,DataClassFactory} = require("../dataclasses/base")
 const {is_required, minLength} = require("../dataclasses/validators");
 const { createPasswordHashing } = require("../utils/password_hashing");
 
@@ -35,7 +35,7 @@ class UserDataClass extends DataClass {
 
 }
 
-const UserDataClassFactory = DataClassFacotry.createFactory(UserDataClass,null,["password"])
+const UserDataClassFactory = DataClassFactory.createFactory(UserDataClass,null,["password"])
 UserDataClassFactory.setRemovableFields(['password'])
 
 module.exports = {UserDataClassFactory,UserDataClass}

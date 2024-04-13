@@ -286,7 +286,7 @@ class MustBeOverrideByTheSubclass extends Error {}
  * It can be used to create objects and 
  * # Wrtie more document please
  */
-class DataClassFacotry{
+class DataClassFactory{
 
     // Store the subclass of the DataClass
     dataClass;
@@ -338,16 +338,16 @@ class DataClassFacotry{
 
     getModel(){
         const c  = new this.dataClass()
-        if(!DataClassFacotry.models[c.getName()]){
+        if(!DataClassFactory.models[c.getName()]){
             const timestamps = this.metaData ? this.metaData['timestamps'] : true
-            DataClassFacotry.models[c.getName()] = c.buildModel(timestamps)
+            DataClassFactory.models[c.getName()] = c.buildModel(timestamps)
         }
-        return DataClassFacotry.models[c.getName()];
+        return DataClassFactory.models[c.getName()];
     }
 
     // Create new class factory to the given class
     static createFactory(cls,removeFields=[]){
-        const c =  new DataClassFacotry(cls,null,removeFields);
+        const c =  new DataClassFactory(cls,null,removeFields);
         // c.removeByDefaultFields = removeFields
         return c
     }
@@ -474,6 +474,6 @@ class DataClassFacotry{
 }
 
 
-module.exports = {DataClass,DataClassFacotry,InvalidDataClassError,NotReturnPromiseError}
+module.exports = {DataClass,DataClassFactory: DataClassFactory,InvalidDataClassError,NotReturnPromiseError}
 
 

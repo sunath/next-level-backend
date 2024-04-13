@@ -1,5 +1,5 @@
 const { createSecurityAccessMiddleware, SecurityAccessMiddleware } = require("./seucrityAccessMiddleware");
-const {DataClassFacotry} = require("./../dataclasses/base");
+const {DataClassFactory: DataClassFactory} = require("./../dataclasses/base");
 const { quickCheckOfRequiredFields } = require("../utils/quickCheckOfRequiredFields");
 const { verifyHashedPassword } = require("../utils/password_hashing");
 

@@ -1,5 +1,5 @@
 
-const {DataClass,DataClassFacotry} = require("../dataclasses/base")
+const {DataClass,DataClassFactory} = require("../dataclasses/base")
 
 class AdminDataClass extends DataClass {
 

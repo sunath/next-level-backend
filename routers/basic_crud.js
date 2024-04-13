@@ -1,5 +1,5 @@
 const { Model, deleteModel } = require("mongoose");
-const { DataClass, DataClassFacotry } = require("../dataclasses/base");
+const { DataClass, DataClassFactory: DataClassFactory } = require("../dataclasses/base");
 const {Router} = require("express");
 const { sendInternalServerError, sendGetItemsResponse, sendErrorWithValidationErrorResponse, sendBadRequest, sendObjectWithQueryNotFoundErrorResponse } = require("../utils/basic_returns");
 const { ModelWithIdNotFound, MongooseInvalidId, ModelWithQueryNotFound } = require("../actions");
@@ -24,7 +24,7 @@ const ERROR_CODES = {
  */
 function applyBasicCrud(router,cls){
     // initialize the basic factory from the given class
-    const classFactory = DataClassFacotry.createFactory(cls)
+    const classFactory = DataClassFactory.createFactory(cls)
     // get the mongoose model
     const model = classFactory.getModel();
 
@@ -71,7 +71,7 @@ function applyBasicCrud(router,cls){
  * // {url}?id=1213290490343
  * @param {Router} router 
  * @param {Model} model 
- * @param {DataClassFacotry} factory
+ * @param {DataClassFactory} factory
  */
 function addGetById(router,factory){
      // write the default get function with id
@@ -118,7 +118,7 @@ function addGetById(router,factory){
  * you can get 10 foods as a array by using this endpoint
  * 
  * @param {Router} router 
- * @param {DataClassFacotry} dataClassFactory 
+ * @param {DataClassFactory} dataClassFactory 
  * @param {Number} limit 
  * @param {Number} skip 
  */
@@ -148,7 +148,7 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
 /**
  *add a basic post endpoint create a new object of a model
  * @param {Router} router
- * @param {DataClassFacotry} classFactory
+ * @param {DataClassFactory} classFactory
  */
 function addModelPost(router,classFactory){
     router.post("/",async function(req,res){
@@ -182,7 +182,7 @@ function addModelPost(router,classFactory){
 /**
  * a dynamic view to write the update route  for any model
  * @param {Router} router 
- * @param {DataClassFacotry} classFactory 
+ * @param {DataClassFactory} classFactory 
  * @param {Object} changes 
  */
 function addModelPut(router,classFactory,changes){

@@ -1,12 +1,12 @@
-const { DataClassFacotry, DataClass } = require("./base");
+const { DataClassFactory: DataClassFactory, DataClass } = require("./base");
 
 
 
-class DataClassSubFacotry extends DataClassFacotry{
+class DataClassSubFactory extends DataClassFactory{
 
-    constructor(dataClassIntance,superDataClass){
+    constructor(dataClassInstance,superDataClass){
         super(superDataClass)
-        this.dataClass = dataClassIntance
+        this.dataClass = dataClassInstance
 
     }
 
@@ -31,4 +31,4 @@ class DataClassSubFacotry extends DataClassFacotry{
     }
 }
 
-module.exports = {DataClassSubFacotry}
+module.exports = {DataClassSubFactory}

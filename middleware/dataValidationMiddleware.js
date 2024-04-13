@@ -1,10 +1,10 @@
-const { DataClassFacotry } = require("../dataclasses/base");
+const { DataClassFactory } = require("../dataclasses/base");
 
 /**
  * valiate data in request body with the data class valiation
  * if data is not okay we return the error given by the valiation function
  * 
- * @param {DataClassFacotry} modelFactory 
+ * @param {DataClassFactory} modelFactory 
  */
 function modelDataValidationMiddleware(modelFactory){
     async function middleware(req,res){

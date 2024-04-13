@@ -10,7 +10,7 @@ app.use(express.json())
 
 const mongoose = require("mongoose");
 const { createSecurityAccessMiddleware, CreateSecurityAccessTokenError } = require("../middleware/seucrityAccessMiddleware");
-const { DataClass, DataClassFacotry } = require("../dataclasses/base");
+const { DataClass, DataClassFactory } = require("../dataclasses/base");
 const { is_required } = require("../dataclasses/validators");
 const { sendErrorWithValidationErrorResponse, sendInternalServerError } = require("../utils/basic_returns");
 const { getModelObjectWithPayload, ModelWithQueryNotFound, InternalServerError, getModelObjectWithId } = require("../actions");
@@ -52,8 +52,8 @@ class MovieDataClass extends DataClass{
 
 UserDataClassFactory.setRemovableFields(['password'])
 
-const UserLoggedFactory = DataClassFacotry.createFactory(UserLogDataClass)
-const MovieFactory = DataClassFacotry.createFactory(MovieDataClass)
+const UserLoggedFactory = DataClassFactory.createFactory(UserLogDataClass)
+const MovieFactory = DataClassFactory.createFactory(MovieDataClass)
 
 const userRouter = Router()
 const movieRouter = Router()
