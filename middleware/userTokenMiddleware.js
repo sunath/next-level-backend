@@ -35,7 +35,6 @@ class UserBearerTokenHandler {
 
 
     decodeUserToken(){
-        console.log(this.securityAccessMiddleware)
         return this.securityAccessMiddleware.decode
     };
 
@@ -49,7 +48,7 @@ class UserBearerTokenHandler {
        const user =  await this.classFactory.getModelWithPayload({[this.usernameField]:username})
         if(user){
            const passwordMatches = await verifyHashedPassword(user[this.passwordField],password)
-           return {'okay':passwordMatches,'user':JSON.parse(JSON.stringify(user))};
+           return {'okay':passwordMatches,error:passwordMatches ? null : "Invalid Credentials",user:passwordMatches ? JSON.parse(JSON.stringify(user)) : null};
         }
 
         return {'error':"no user found",'okay':false}

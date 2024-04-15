@@ -6,6 +6,15 @@ const { ModelWithIdNotFound, MongooseInvalidId, ModelWithQueryNotFound } = requi
 const { deleteObjectFromCollection } = require("../actions/deleteActions");
 const { removeFieldsAndReturnTheObject } = require("../utils/removeFieldsAndGetTheObject");
 
+/**
+ * A simple middleware to pass when the middlewares aren't given
+ * @param {} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+function passerMiddleware(req,res,next){
+    next()
+}
 
 const ERROR_CODES = {
     ID_NOT_FOUND : 1,
@@ -19,18 +28,23 @@ const ERROR_CODES = {
  * add 5 endpoints to the router
  * get getAll post update delete
  * A generic functions that can be applied for any class
+ * 
  * @param {Router} router 
- * @param {DataClass} dataclass 
+ * @param {DataClass} dataclass
+ * @param {middleWares} - an object containing middlewares
+ * @example
+//  * like this
+ * applyBasicCrud(router,cls,{'get':[getMiddleware],'post':[postMiddleware]}) 
  */
-function applyBasicCrud(router,cls){
+function applyBasicCrud(router,cls,middleWares={}){
     // initialize the basic factory from the given class
     const classFactory = DataClassFactory.createFactory(cls)
     // get the mongoose model
     const model = classFactory.getModel();
 
     // add the get by id facility
-    addGetById(router,classFactory);
-    getAllObjects(router,classFactory);
+    addGetById(router,classFactory,middleWares['get'] || []);
+    getAllObjects(router,classFactory,middleWares['getAll'] || []);
 
 
     /**
@@ -50,20 +64,20 @@ function applyBasicCrud(router,cls){
     /**
      * Post request
      */
-    addModelPost(router,classFactory)
+    addModelPost(router,classFactory,middleWares['post'] || [])
 
 
     // update the model
-    addModelPut(router,classFactory)
+    addModelPut(router,classFactory,middleWares['put'] || [])
 
     // delete the mode 
-    addModelDelete(router,classFactory)
+    addModelDelete(router,classFactory,middleWares['delete'] || [])
 }
 
 
 
 /**
- * add the most baic route
+ * add the most basic route
  * 
  * get the user by id
  * 
@@ -73,9 +87,9 @@ function applyBasicCrud(router,cls){
  * @param {Model} model 
  * @param {DataClassFactory} factory
  */
-function addGetById(router,factory){
+function addGetById(router,factory,middlewares=[]){
      // write the default get function with id
-     router.get("/",async function(req,res){
+     router.get("/",[...middlewares,passerMiddleware],async function(req,res){
         //take the id from the query
         const id = req.query['id']
         // check the id exists
@@ -111,8 +125,8 @@ function addGetById(router,factory){
 
 
 /**
- * Can be used to retrive many objects at one
- * most commonly used to retrive data in a table
+ * Can be used to retrieve many objects at one
+ * most commonly used to retrieve data in a table
  * or maybe in a scroll bar
  * for example think you have a class called Food
  * you can get 10 foods as a array by using this endpoint
@@ -122,8 +136,8 @@ function addGetById(router,factory){
  * @param {Number} limit 
  * @param {Number} skip 
  */
-function getAllObjects(router,dataClassFactory,limit=10,skip=0){
-    router.get("/all",async function(req,res){
+function getAllObjects(router,dataClassFactory,middlewares=[],limit=10,skip=0){
+    router.get("/all",[...middlewares,passerMiddleware],async function(req,res){
 
         // query the limit
         // set it to user defined value or default value
@@ -150,8 +164,8 @@ function getAllObjects(router,dataClassFactory,limit=10,skip=0){
  * @param {Router} router
  * @param {DataClassFactory} classFactory
  */
-function addModelPost(router,classFactory){
-    router.post("/",async function(req,res){
+function addModelPost(router,classFactory,middlewares){
+    router.post("/",[...middlewares,passerMiddleware],async function(req,res){
         // create a new empty object object and set the data according to the request body
         const newObject = classFactory.createObject(req.body)
         // console.log(newObject, " object intialized")
@@ -185,8 +199,8 @@ function addModelPost(router,classFactory){
  * @param {DataClassFactory} classFactory 
  * @param {Object} changes 
  */
-function addModelPut(router,classFactory,changes){
-    router.put("/",async function(req,res){
+function addModelPut(router,classFactory,middlewares=[]){
+    router.put("/",[...middlewares,passerMiddleware],async function(req,res){
        try{
         // update the model if we can
            const data = await classFactory.updateModelObject(req.body.query,req.body.payload)
@@ -210,8 +224,8 @@ function addModelPut(router,classFactory,changes){
  * @param {Express.Router} router 
  * @param {*} classFactory 
  */
-function addModelDelete(router,classFactory){
-    router.delete("/",async function(req,res){
+function addModelDelete(router,classFactory,middlewares){
+    router.delete("/",[...middlewares,passerMiddleware],async function(req,res){
 
         try{
             // grab the id if exists

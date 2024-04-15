@@ -59,14 +59,13 @@ const userRouter = Router()
 const movieRouter = Router()
 
 
-applyBasicCrud(userRouter,UserDataClass);
-applyBasicCrud(movieRouter,MovieDataClass)
+
 app.use(express.json({strict:false}))
-app.use("/user",userRouter)
-app.use("/movie",movieRouter)
+
 
 const [createSecurityToken,securityTokenMiddleware]= createSecurityAccessMiddleware("fhejhfwjfbehfevgfenenwn3be3br b3  r3 rb3  r3 ")
 // console.log(createSecurityToken,securityTokenMiddleware)
+
 const userLoggedModelDataValiation = modelDataValidationMiddleware(UserLoggedFactory)
 const addNotFoundMiddlewareValidation = addNotFoundMiddleware(UserDataClassFactory.getModel(),(data) => data,403,"Invalid Credentials");
 userRouter.post("/accesstoken",async function (req,res)  {
@@ -135,6 +134,21 @@ userRouter.get("/verifyNewToken",userBearerTokenHandler.decodeUserToken(),async 
 })
 
 app.get("",(req,res) => res.status(200).send("tes"))
+
+applyBasicCrud(userRouter,UserDataClass,{'put':[
+    userBearerTokenHandler.decodeUserToken(),
+    function(req,res,next){
+        if(req.body.query._id == req.verifyDetails._id){
+            next()
+        }else{
+            return res.status(400).send({error:"Id does not match"})
+        }
+    }
+
+    ]});
+applyBasicCrud(movieRouter,MovieDataClass,{});
+app.use("/user",userRouter)
+app.use("/movie",movieRouter)
 app.listen(8000,() => {
     // console.log(UserDataClassFactory.removeByDefaultFields)
     UserDataClassFactory.setRemovableFields(['password'])
