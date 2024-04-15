@@ -118,7 +118,9 @@ class DataClass{
      * @returns {Object}
      */
     async validate(){
-       
+       if(!this.form_data || Object.keys(this.form_data).length == 0){
+        return {data:{okay:false,error:"Data isn't given"}}
+       }
         // Get the all fields of the validations in the class
         const validateKeys = DataClass.getOwnPropertyNames(this.validations);
         // gather information about how many validations owns by one by one
@@ -327,7 +329,7 @@ class DataClassFactory{
         // set the attriubute values
         iterateList(DataClass.getOwnPropertyNames(object),(e) => {
     
-            object[e] = data[e] || undefined
+            object[e] = data ? data[e] ? data[e] : undefined : undefined
         })
         // return the customize object
         return object
