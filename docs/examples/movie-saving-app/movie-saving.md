@@ -210,22 +210,22 @@ Then run `node index.js` and let's start testing.
 
 ### Creating movies
 First of all we are going to create few movies.Only three for now.
-![Iron man Movie Saving](https://i.ibb.co/r6fKKZk/Screenshot-2024-04-15-123036.png "iron man movie request")
+![Iron man Movie Saving](1.png "iron man movie request")
 
 Then we ran the second request twice and got to different responses.
-![Cars no error](https://i.ibb.co/ZBRYZy0/Screenshot-2024-04-15-123400.png "Cars request no errors").
+![Cars no error](2.png "Cars request no errors").
 Then we change the date and re ran again.But this time we got an error saying name must be unique.That's because we set the name to be unique.So we can't have two movies with the same name(for this application)
-![Cars with error](https://i.ibb.co/g34W1cD/Screenshot-2024-04-15-123427.png "Cars with errors")
+![Cars with error](3.png "Cars with errors")
 
-![Another movie](https://i.ibb.co/Bqjmh9J/Screenshot-2024-04-15-123559.png "Another Movie")
+![Another movie](4.png "Another Movie")
 
 ### Getting movies
 First let's see how to get all the movies.You just make a get request to /movie/all
-![Get all Movies](https://i.ibb.co/tLvjwy2/Screenshot-2024-04-15-124004.png "Get all movies")
+![Get all Movies](5.png "Get all movies")
 
 To get one movie we need the id of the movie.Grab a one from get all response.And we make a get request /movie endpoint with id as a query parameter.
 
-![Get one movie](https://i.ibb.co/YZcqtR0/Screenshot-2024-04-15-124018.png "get one movie")
+![Get one movie](6.png "get one movie")
 
 ### Updating a movie
 In order to update we make a put request to /movie.Json body should have two things.
@@ -234,16 +234,16 @@ query and payload.Most of the time query object gonna look like this.
 query:{"_id":"some random id"}
 ```
 In the payload we give what we need to change as key value pairs.
-![Update a movie](https://i.ibb.co/NjzRhdh/Screenshot-2024-04-15-124251.png "update a movie")
+![Update a movie](7.png "update a movie")
 
 Then get that movie with get request with it's id.
-![Updated movie](https://i.ibb.co/LkRydGH/Screenshot-2024-04-15-124310.png "updated movie response")
+![Updated movie](8.png "updated movie response")
 
 ### Deleting movie
 To delete a movie we make a  delete request to /movie.As it's in get we need the id as a query parameter.
-![Delete one object](https://i.ibb.co/VBHx2DM/Screenshot-2024-04-15-124400.png "delete one object")
+![Delete one object](9.png "delete one object")
 
 So let's make a getAll request to see whether it's deleted or not.
-![After deleting](https://i.ibb.co/zRDct7s/Screenshot-2024-04-15-124415.png "after deleting")
+![After deleting](10.png "after deleting")
 
 That's it.That's the basic tests we run for now.
