@@ -5,6 +5,7 @@ const {removeFieldsAndReturnTheObject} = require("./removeFieldsAndGetTheObject"
 const {functionToPromise} = require("./functionToPromise")
 const checkTheObjectPromiseOrNot = require("./promiseChecking")
 const {quickCheckOfRequiredFields} = require("./quickCheckOfRequiredFields")
+const {findValueInObject} = require("./findValueInObjectTree")
 
 module.exports = {createMongoDBField,
     ...responses,
@@ -12,5 +13,6 @@ module.exports = {createMongoDBField,
     removeFieldsAndReturnTheObject,
     functionToPromise,
     checkTheObjectPromiseOrNot,
-    quickCheckOfRequiredFields
+    quickCheckOfRequiredFields,
+    findValueInObject
 }
