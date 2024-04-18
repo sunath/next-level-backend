@@ -4,10 +4,36 @@ const utils = require("../../../utils")
 
 class User extends dataclass.DataClass{
     getName(){return "users"}
-    username = utils.createMongoDBField(String,true,[dataclass.validators.is_required("Username is required")])
+    username = sqlite.createField(sqlite.types.TEXT,false)
+    password = sqlite.createField(sqlite.types.TEXT,false)
 }
 
-sqlite.createDatabase( process.cwd() +  "/tests/databases/sqlite3/temp.db").then(e => console.log(e)).catch(e => console.log(e))
-const database  = new sqlite.SQLiteDatabase(process.cwd() + "/tests/databases/sqlite3/temp.db");
-database.connect()
-database.createTable(User)
+
+const database  = new sqlite.SQLiteDatabase(process.cwd() + "\\tests\\databases\\sqlite3\\temp.db");
+
+async function runner(){
+    await database.connect()
+
+    try{
+       await database.createTable(User)
+    // await database.generateNewUniqueID("users")
+    // await database.createObject("users",{"username":"Sunath Thenudeejaya","password":"helldedeo123"})
+    // const obj = await database.findById('users','e8b72c51-7fc4-4247-9334-6049fc9ba345')
+    // const objects = await database.find('users',{'password':"helldedeo123"})
+    // console.log(obj)
+
+    // const objects = await database.updateById("users","e8b72c51-7fc4-4247-9334-6049fc9ba345",{"username":"hello world"})
+    // console.log(objects)
+    await database.deleteByID("users","e8b72c51-7fc4-4247-9334-6049fc9ba345")
+    }catch(error){
+       console.log(error)
+    }
+    
+
+    await database.close()
+ 
+}
+
+
+runner().then(e => console.log(e)).catch(e => console.log(e))
+// database.closeDatabase()

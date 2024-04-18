@@ -2,14 +2,14 @@
 const mustBeDefinedBySubClassError = () =>  {throw new Error("This function has to be override by the sub class")}
 
 class Database {
-    connect(){error()}
-    createTable(){error()}
-    createInstance(){error()}
-    updateInstance(){error()}
-    deleteInstance(){error()}
-    getInstance(){error()}
-    getManyInstances(){error()}
-    saveQueries(){error()}
+    connect(){mustBeDefinedBySubClassError()}
+    createTable(){mustBeDefinedBySubClassError()}
+    updateById(){mustBeDefinedBySubClassError()}
+    deleteByID(){mustBeDefinedBySubClassError()}
+    findById(){mustBeDefinedBySubClassError()}
+    find(){mustBeDefinedBySubClassError()}
+    saveQueries(){mustBeDefinedBySubClassError()}
+    createObject(){mustBeDefinedBySubClassError()}
 }
 
 module.exports = {Database}
