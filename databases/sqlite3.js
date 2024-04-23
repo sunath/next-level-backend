@@ -6,6 +6,9 @@ const {Database} = require("./database")
 const {DataClass, DataClassFactory} = require("../dataclasses")
 const { InternalServerError, ModelWithIdNotFound } = require("../actions")
 const { InvalidIdGiven } = require("./errors")
+const { Databases, DATABASE_TYPES } = require(".")
+const { InvalidArgumentError } = require("../errors")
+const dataclasses = require("../dataclasses")
 /**
  * Create a new database in the given url (should be local )
  * @param {url} - url 
@@ -23,6 +26,37 @@ function createDatabase(url){
     })   
 }
 
+// define the validators that are limited sqlite database
+// these are going to be similar to validators in other databases too
+// but since we are using different libraries we are gonna make validators for every database
+const SQLITE_VALIDATORS = {
+
+    /**
+     * Validate the relation field database rules
+     * Means we check weather that value regards to column exist in the table 
+     * @param {String} lookup_table 
+     * @param {String} column_name 
+     * @returns {Function}
+     */
+    RELATIONAL_DATABASE_VALIDATOR(lookup_table,column_name){
+        // create the validator 
+        return  function(value){
+            // return the promise in order to not to break the architecture
+            return new Promise(async (resolve,reject) => {
+                // run the query to get the record with that
+                const val = (await Databases.connections[DATABASE_TYPES.SQLITE].find(lookup_table,{[column_name]:value})) || []
+                // console.log(value , " this is the query of the relation field check ")
+                if(val.length == 0){
+                    resolve({okay:false,error:`The ${column_name} is not valid.Please input a right one`})
+                }else{
+                    resolve({okay:true})
+                }
+            }) 
+       
+       }
+
+    }
+}
 
 /**
  * runs a database function without call back
@@ -34,7 +68,6 @@ function createDatabase(url){
 function databaseFunctionToPromise(...args){
     return new Promise((resolve,reject) => {
         this.database.serialize(() => {
-            console.log(args[0])
             this.database[args[0]](...args.splice(1,args.length),(error,data=null) => {
                 if(error){
                     reject(error.message)
@@ -55,6 +88,7 @@ function convertFieldToColumn(name,fieldObj){
     return `${name} ${fieldObj.type} ${fieldObj.unique ? "UNIQUE" : ""}`
 }
 
+
 /**
  * Create a field compatible with both dataclass and sqlite database
  * @param {SQLite Type} type - Database type 
@@ -66,7 +100,7 @@ function convertFieldToColumn(name,fieldObj){
  * @param {*} metaData 
  * @returns 
  */
-function createField(type,unique=false,nullable=false,validations=null,beforeValidation=null,afterValidation=null,metaData={}){
+function createField(type,unique=false,nullable=false,validations=null,beforeValidation=null,afterValidation=null,metaData={relational:false}){
     let jsType = Number;
     switch(type){
         case types.DATE:
@@ -79,7 +113,36 @@ function createField(type,unique=false,nullable=false,validations=null,beforeVal
             jsType = String
             break;
     }
-    return {type:jsType,sqlType:type,unique,validations,beforeValidation,afterValidation,metaData}
+    return {type:jsType,sqlType:type,unique,validations,beforeValidation,afterValidation,...metaData}
+}
+/**
+ * Create a relational field in the database
+ * @param {DataClass} dClass - Data class as an argument 
+ * @param {String} fieldName  - Name of the field in the database or _id
+ * @param {Boolean} unique 
+ * @param {Array<Func>} validations - validator functions 
+ * @param {MapFunc} beforeValidation - a function to run before validation 
+ * @param {MapFunc} afterValidation - a function to run after validation
+ * @param {*} metaData 
+ * @returns 
+ */
+function createRelationField(dClass,fieldName,unique,validations=[],beforeValidation=null,afterValidation=null,metaData={}){
+    const tempInstance = new dClass()
+    let type;
+    if(fieldName == "_id"){
+        type = types.TEXT
+    }else{
+        try{
+            type = tempInstance[fieldName].sqlType
+        }catch(error){
+            if(error instanceof TypeError){
+                throw new InvalidArgumentError("relational field name must be in data class.Only property you can give without declaring it in the dataclass is the _id field name.")
+            }
+        }
+    
+    }
+    const defaultOptions = createField(type,unique)
+    return {...defaultOptions,validations:[SQLITE_VALIDATORS.RELATIONAL_DATABASE_VALIDATOR(tempInstance.getName(),fieldName),...validations],afterValidation,beforeValidation,relational:true,relationalTable:tempInstance.getName(),relationalField:fieldName}
 }
 
 // types that database can handle
@@ -87,7 +150,7 @@ const types = {
     INTEGER:"INTEGER",
     TEXT:"TEXT",
     BOOLEAN:"BOOLEAN",
-    DATE:"TEXT",
+    DATE:"DATE",
     REAL:"REAL",
     FLOAT:"NUMERIC"
 }
@@ -143,6 +206,8 @@ class SQLiteDatabase extends Database{
             }
         })
     })    
+
+        Databases.connections[DATABASE_TYPES.SQLITE] = this
         // bind the databaseFunctionToPromise function to our existing database
         this.databaseFunctionToPromise = databaseFunctionToPromise.bind({database:this.database})
         // get the existing table names from the database
@@ -168,7 +233,7 @@ class SQLiteDatabase extends Database{
             // create the template
             // first default table creation
             // then add the user defined fields
-            let tableTemplate = `CREATE TABLE "${dataClassInstance.getName()}" (${DEFAULT_TABLE_CREATION},${ userDefinedFields.map((e) => databaseFieldIntoQueryField(e,dataClassInstance[e])).join(",") },PRIMARY KEY ("_id")) `
+            let tableTemplate = `CREATE TABLE "${dataClassInstance.getName()}" (${DEFAULT_TABLE_CREATION},${ userDefinedFields.map((e) => databaseFieldIntoQueryField(e,dataClassInstance[e])).join(",") },PRIMARY KEY ("_id"),${userDefinedFields.filter(e => dataClassInstance[e].relational).map(e => ` FOREIGN KEY (${e}) REFERENCES ${dataClassInstance[e].relationalTable}(${dataClassInstance[e].relationalField}) `).join(",")}) `
             // run the table query and return it's response
             return this.databaseFunctionToPromise('run',tableTemplate)
         }
@@ -345,4 +410,4 @@ class SQLiteDatabase extends Database{
 
 }
 
-module.exports = {createDatabase,SQLiteDatabase,types,createField}
+module.exports = {createDatabase,SQLiteDatabase,types,createField,createRelationField}
