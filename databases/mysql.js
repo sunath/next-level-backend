@@ -4,6 +4,7 @@ const { Database } = require("./database")
 const {functionToPromise} = require("../utils")
 const uuid = require("uuid")
 const {DataClass,DataClassFactory}= require("../dataclasses")
+const { ModelWithIdNotFound, InternalServerError } = require("../actions")
 
 /**
  * Turns the database callback function into a promise
@@ -197,7 +198,7 @@ class MySqlDatabase extends Database{
         // refresh the object via our friendly method and return the created object
         return this.findById(dClass,id)
     }
-    
+
     /**
      * Finds an object in a table using it's id
      * @param {DataClass} dClass - Data class 
@@ -205,7 +206,82 @@ class MySqlDatabase extends Database{
      * @returns {Object}
      */
     async findById(dClass,id){
-        return queryToPromise(this.connection,`SELECT * FROM ${getNamesFromDataClasses(dClass)} where _id='${id}'`)
+        try{
+            // since mysql send a list of objects even when we want single one they send a list
+            const object = await queryToPromise(this.connection,`SELECT * FROM ${getNamesFromDataClasses(dClass)} where _id='${id}'`)
+            // if the object length is zero , it means sql query did not found any object with that id
+            if(object.length == 0){
+                throw new ModelWithIdNotFound(`${getNamesFromDataClasses(dClass)} does not have a object with the given id`)
+            }else{
+                // otherwise we send the first object in the list
+                // since there can be only one object with that id as long as the id is unique
+                return object[0]
+            }
+        }catch(error){
+           if(error instanceof ModelWithIdNotFound){
+                throw error
+           }
+            // if an error happens we just throw an error 
+            throw new InternalServerError("Could not perform the query.An error happened.")
+        }
+       
+    }
+
+    /**
+     * Update an object in the table
+     * id must be specify to update 
+     * @param {DataClass} dClass - 
+     * @param {String} id  - id of the object
+     * @param {Object} data - data you want to change
+     * @returns 
+     */
+    async updateById(dClass,id,data){
+        
+        try{
+            // get the object from the database
+            // this will automatically throw 404 error if the object isn't there 😉😉
+            const object = await this.findById(dClass,id)
+            // get the field that has we need to update
+            const keys = Object.keys(data)
+            // get the table
+            const tableName = getNamesFromDataClasses(dClass)
+            // all right . It's time to create the query
+            const query = `UPDATE ${tableName} SET ${keys.map(e => `${e}=?`).join(",")} where _id='${id}'`
+            // runs the query
+            return await queryToPromise(this.connection,query,[keys.map(e => data[e])])
+        }catch(error){
+            // id does not match throw the same error
+            if(error instanceof ModelWithIdNotFound){
+                throw error
+            }
+            // otherwise throw the common error InternalSeverError 🤣🤣😂
+            throw new InternalServerError("Could not perform the query well.")
+        }
+    }
+
+    /**
+     * Delete an object from the table
+     * @param {DataClass} dataClass  - 
+     * @param {String} id  - id of the object
+     * @returns 
+     */
+    async deleteByID(dataClass,id){
+        try{
+            // get the object
+            // it will automatically throw the 404 error if the object does not appear
+            const model = await this.findById(dataClass,id)
+            // return the response of delete query .of course it will be null or undefined 😂😂😂
+            return await queryToPromise(this.connection,`DELETE FROM ${getNamesFromDataClasses(dataClass)} where _id='${id}'`)
+        }catch(error){
+            // send the model with id not found if error is that
+            if(error instanceof ModelWithIdNotFound){
+                throw error
+            }
+            console.error(error)
+            // otherwise send the common error saying internal server error
+            throw new InternalServerError("Delete query could not perform")
+           
+        }
     }
 
 
