@@ -224,7 +224,7 @@ class SQLiteDatabase extends Database{
         const dataClassInstance = new dataClass();
         // Create a factory and retrieve the fields
         // We can do it with data class too.But in this way we are to write less code 😉😉
-        const allFields = DataClassFactory.createFactory(dataClass).getModelFields();
+        const allFields = DataClassFactory.createFactory(dataClass,{'DATABASE':DATABASE_TYPES.SQLITE}).getModelFields();
         // Get the user defined fields
         // That means we remove the `createdAt` and `updatedAt` fields since they are added by the our default table creation
         let userDefinedFields = allFields.splice(0,allFields.length-2)

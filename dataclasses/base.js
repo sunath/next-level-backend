@@ -6,6 +6,7 @@ const  {getModelObjectWithId,getAllModelsObjects,addNewObjectToCollection} = req
 const { linearFindMaxNumber } = require("../utils/linearAlogirthms");
 const {getModelObjectWithPayload} = require("../actions/getActions");
 const {updateTheModelWithTheId} = require("../actions/putActions");
+const { Databases } = require("../databases");
 
 /**
  * Base class for every data class
@@ -15,6 +16,10 @@ const {updateTheModelWithTheId} = require("../actions/putActions");
  * In case you are an oop fan
  */
 class DataClass{
+
+    connection;
+    classSelf;
+
 
     getRemovableFields(){
         return []
@@ -33,7 +38,7 @@ class DataClass{
      * @returns 
      */
     static getOwnPropertyNames(thisObj){
-        return Object.keys(thisObj).filter(e => (e != "validations" && e != "form_data" && e != "model" && e !="before_validations" && e != "after_validations"))
+        return Object.keys(thisObj).filter(e => (e != "validations" && e != "form_data" && e != "model" && e !="before_validations" && e != "after_validations" && e!="connection" && e!="classSelf" && e!="DATABASE_REPRESENTATION"))
     }
     
     /**
@@ -61,7 +66,18 @@ class DataClass{
             // add the unique validator if the we have the unique in the property attributes
             if(this[property]['unique']){
                 // console.log(property,this.model)
-                validations[property].push(unqiueValidator(property,this.model))
+                const newValidator = async function(value) {
+                    return new Promise( (async (resolve,reject) => {
+                        // console.log(this)
+                        const response =await  this.connection.find(this.classSelf,{[property]:value})
+                        if(!response){
+                            resolve({okay:true})
+                        }else{
+                            resolve({okay:false,error:`${property} is already taken`})
+                        }
+                    }).bind(this) )
+                }
+                validations[property].push(newValidator.bind(this))
             }
             // collect the beforeValidations
             // console.log(this[property])
@@ -301,8 +317,16 @@ class DataClassFactory{
     // Mainly used to get the subclass
     constructor(dataClass,metaData,removeFields){
         this.dataClass = dataClass;
-        this.model = this.getModel()
+        // this.model = this.getModel()
         this.metaData = metaData;
+        this.dataBaseRepresentation = metaData['DATABASE']
+        if(!this.dataBaseRepresentation){
+            throw new Error("Data base representation must be passed down")
+        }
+        this.connection = Databases.connections[this.dataBaseRepresentation]
+        if(!this.connection){
+            throw new Error("Database connection must be initialized to work with data class factory")
+        }
         this.removeByDefaultFields = new this.dataClass().getRemovableFields() || []
         // console.log(this.model)
         this.getModelObjectById = this.getModelObjectById.bind(this)
@@ -321,6 +345,8 @@ class DataClassFactory{
         let object = new this.dataClass()
          //set the model
         object.model = this.model
+        object.classSelf = this.dataClass
+        object.connection = this.connection
 
         // Check wether object is a data class or not
         if(!(object instanceof DataClass))throw new InvalidDataClassError("Data class is invalid");
@@ -348,8 +374,8 @@ class DataClassFactory{
     }
 
     // Create new class factory to the given class
-    static createFactory(cls,removeFields=[]){
-        const c =  new DataClassFactory(cls,null,removeFields);
+    static createFactory(cls,metaData,removeFields=[]){
+        const c =  new DataClassFactory(cls,metaData,removeFields);
         // c.removeByDefaultFields = removeFields
         return c
     }
@@ -386,6 +412,12 @@ class DataClassFactory{
         return getAllModelsObjects(this.getModel(),limit,skip,this.getModelFieldsExpect(this.removeByDefaultFields));
     }
 
+    /**
+     * Get the model with the filter you want
+     * filter must passed as key - value pairs
+     * @param {Object} query - query object
+     * @returns 
+     */
     getModelWithPayload(query){
         return getModelObjectWithPayload(this.getModel(),query)
     }
@@ -396,7 +428,7 @@ class DataClassFactory{
      * @returns {Promise<Object>}
      */
     createModelObject(validatedData){
-            return addNewObjectToCollection(this.model,validatedData)
+            return this.connection.createObject(this.dataClass,validatedData)
     }
 
 
@@ -442,7 +474,10 @@ class DataClassFactory{
     // fields of the model
     fields = []
 
-    // returns the fields of the model
+    /**
+     * Returns all the field the model gonna have
+     * @returns {Array<String>}
+     */
     getModelFields(){
         if(this.fields.length == 0){
             const cls = new this.dataClass()
@@ -452,7 +487,12 @@ class DataClassFactory{
         return [...this.fields,'createdAt','updatedAt'];
     }
 
-    // returns the field of the model expect the one you don't want
+    
+    /**
+     * Returns all the fields except the field you just pass down 
+     * @param {Array<String>} fields 
+     * @returns 
+     */
     getModelFieldsExpect(fields){
         const filteredFields = this.getModelFields().filter((e) => fields.indexOf(e) < 0)
         return filteredFields;

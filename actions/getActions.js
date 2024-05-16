@@ -54,8 +54,7 @@ async function getModelObjectWithId(model,id,columns=null){
  */
 async function getModelObjectWithPayload(model,query){
     try{
-        const object = await model.findOne(query)
-        if(!object)throw new ModelWithQueryNotFound()
+        const object = await model.find(query)
         return object
     }catch(error){
         if(error instanceof ModelWithQueryNotFound)throw error;

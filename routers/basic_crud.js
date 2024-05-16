@@ -36,11 +36,9 @@ const ERROR_CODES = {
 //  * like this
  * applyBasicCrud(router,cls,{'get':[getMiddleware],'post':[postMiddleware]}) 
  */
-function applyBasicCrud(router,cls,middleWares={}){
+function applyBasicCrud(router,cls,middleWares={},database_representation){
     // initialize the basic factory from the given class
-    const classFactory = DataClassFactory.createFactory(cls)
-    // get the mongoose model
-    const model = classFactory.getModel();
+    const classFactory = DataClassFactory.createFactory(cls,{'DATABASE':database_representation})
 
     // add the get by id facility
     addGetById(router,classFactory,middleWares['get'] || []);

@@ -5,6 +5,7 @@ const {functionToPromise} = require("../utils")
 const uuid = require("uuid")
 const {DataClass,DataClassFactory}= require("../dataclasses")
 const { ModelWithIdNotFound, InternalServerError } = require("../actions")
+const { DATABASE_TYPES } = require(".")
 
 /**
  * Turns the database callback function into a promise
@@ -163,18 +164,20 @@ class MySqlDatabase extends Database{
      * @param {DataClass} dataClass 
      */
     async createTable(dataClass){
+        console.log("we are here")
         // create a new instance grab data
         const instance = new dataClass()
         // get the name of the table
         const tableName = instance.getName()
         // grab all the fields from the data class
-        const allFields = DataClassFactory.createFactory(dataClass).getModelFields();
+        const allFields = DataClassFactory.createFactory(dataClass,{'DATABASE':DATABASE_TYPES.MYSQL}).getModelFields();
         // Get the user defined fields
         // That means we remove the `createdAt` and `updatedAt` fields since they are added by the our default table creation
         let userDefinedFields = allFields.splice(0,allFields.length-2)
         // create the template
         let tableTemplate = `CREATE TABLE \`${tableName}\` (_id VARCHAR(250) UNIQUE NOT NULL, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, ${userDefinedFields.map(e => createFieldQuery(e,instance[e])).join(",") } ,PRIMARY KEY(\`_id\`));`
         // wait till the table creation is done
+        console.log(tableTemplate)
         await queryToPromise(this.connection,tableTemplate)
     }
 
@@ -208,9 +211,9 @@ class MySqlDatabase extends Database{
     async findById(dClass,id){
         try{
             // since mysql send a list of objects even when we want single one they send a list
-            const object = await queryToPromise(this.connection,`SELECT * FROM ${getNamesFromDataClasses(dClass)} where _id='${id}'`)
+           const object = await queryToPromise(this.connection,`SELECT * FROM ${getNamesFromDataClasses(dClass)} where _id='${id}'`)
             // if the object length is zero , it means sql query did not found any object with that id
-            if(object.length == 0){
+            if(object.length == 0){ 
                 throw new ModelWithIdNotFound(`${getNamesFromDataClasses(dClass)} does not have a object with the given id`)
             }else{
                 // otherwise we send the first object in the list
@@ -284,6 +287,13 @@ class MySqlDatabase extends Database{
         }
     }
 
+
+
+    async find(dClass,query){
+        const objects =  await queryToPromise(this.connection,`SELECT * FROM ${getNamesFromDataClasses(dClass)} where ${Object.keys(query).map(e => `${e}=?`)}`,Object.keys(query).map(e => query[e]))
+        return objects.length == 0 ? null : objects[0]
+
+    }
 
 }
 

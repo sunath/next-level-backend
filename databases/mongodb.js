@@ -1,9 +1,10 @@
 const { default: mongoose } = require("mongoose");
 const { Database } = require("./database");
 
-const {getModelObjectWithId, getModelObjectWithPayload,updateTheModelWithTheId, deleteObjectFromCollection, addNewObjectToCollection} = require("../actions");
+const {getModelObjectWithId, getModelObjectWithPayload,updateTheModelWithTheId, deleteObjectFromCollection, addNewObjectToCollection, ModelWithQueryNotFound} = require("../actions");
 const { DataClassFactory } = require("../dataclasses");
-const {createMongoDBField} = require("../utils")
+const {createMongoDBField} = require("../utils");
+const { DATABASE_TYPES } = require(".");
 
 // Data classes models will be saved here
 const savedClasses = {}
@@ -16,12 +17,12 @@ const savedClasses = {}
  */
 function dataClassToModel(dataClass){
     // create a new empty instance 
-    const name = new dataClass()
+    const name = (new dataClass()).getName()
     // check if we have already have one
     // if we don't have one
     if(!savedClasses[name]){
         // create the model
-        const model = DataClassFactory.createFactory(dataClass).getModel()
+        const model = DataClassFactory.createFactory(dataClass,{'DATABASE':DATABASE_TYPES.MONGODB}).getModel()
         // save it in our class
         savedClasses[name] = model
         // returns it
@@ -62,8 +63,11 @@ class MongoDBDatabase extends Database {
      * @param {Object} query - field you wanna query 
      * @returns {Array<Object> | null}
      */
-    async find(dClass,query){
-        return getModelObjectWithPayload(dataClassToModel(dClass),query)
+    async find(dClass,query,throwError=false){
+    
+        const model = dataClassToModel(dClass)
+        const response = await model.findOne(query)
+        return response
     }
 
     /**
